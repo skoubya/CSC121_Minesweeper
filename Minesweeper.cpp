@@ -2,7 +2,5 @@
 
 int main()
 {
-  cout<<"Testing Git Hub \n";
-  cout<<"Still testing \n";
-  cout<<"update \n";
+  cout<<"Aaron has edited \n";
 }
