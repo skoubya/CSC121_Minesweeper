@@ -3,5 +3,9 @@
 int main()
 {
   cout<<"Aaron has edited via git shell\n";
+<<<<<<< HEAD
   cout << "Hi" << endl;
+=======
+  cout<<"Rey \n";
+>>>>>>> origin/master
 }
