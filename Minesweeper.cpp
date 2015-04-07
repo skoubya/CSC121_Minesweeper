@@ -6,6 +6,6 @@ int main()
 <<<<<<< HEAD
   cout << "Hi" << endl;
 =======
-  cout<<"Rey \n";
+  cout<<"Rey Nick \n";
 >>>>>>> origin/master
 }
