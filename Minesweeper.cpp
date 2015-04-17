@@ -109,7 +109,8 @@ void Tile::changeState(State s)
 struct Game:Simple_window //make window later
 {
 	public:
-		Game(Point xy, const string& title );	
+		Game(Point xy, const string& title );
+		~Game();
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
 		
@@ -127,6 +128,19 @@ Game::Game (Point xy, const string& title)
 		{
 			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide},cb_tile_click));
 			attach(*board[r][c]);
+		}
+	}
+}
+
+Game::~Game()
+{
+	int rows=board.size();
+	int cols=board[0].size();
+	for (int r=0; r<rows; r++)
+	{
+		for (int c=0; c<cols; c++)
+		{
+			delete board[r][c];
 		}
 	}
 }
