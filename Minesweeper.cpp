@@ -80,14 +80,14 @@ void Tile::attach(Graph_lib::Window& win)
 	pw = new MyBox(loc.x, loc.y, width, height, label.c_str());
     pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
     own = &win;
-	pw->align(FL_ALIGN_IMAGE_BACKDROP); //makes redraw all (bad & slow)
+	pw->align(FL_ALIGN_IMAGE_BACKDROP); 
 	changeState(State::unclicked);
 }
 
 void Tile::changeImage(Fl_PNG_Image& im)
 {
 	pw->image(im);
-	pw->redraw_label(); //maybe get rid of later
+	pw->redraw(); //maybe get rid of later
 }
 
 void Tile::changeState(State s) 
