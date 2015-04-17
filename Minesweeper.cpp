@@ -4,79 +4,152 @@
 #include "GUI.h"
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl.H>
 
-struct Tile:Button
+namespace TileImg
+{
+	Fl_PNG_Image img1{string("Small_Squares/1.png").c_str()};
+	Fl_PNG_Image img2{string("Small_Squares/2.png").c_str()};
+	Fl_PNG_Image img3{string("Small_Squares/3.png").c_str()};
+	Fl_PNG_Image img4{string("Small_Squares/4.png").c_str()};
+	Fl_PNG_Image img5{string("Small_Squares/5.png").c_str()};
+	Fl_PNG_Image img6{string("Small_Squares/6.png").c_str()};
+	Fl_PNG_Image img7{string("Small_Squares/7.png").c_str()};
+	Fl_PNG_Image img8{string("Small_Squares/8.png").c_str()};
+	Fl_PNG_Image imgBlank{string("Small_Squares/Blank.png").c_str()};
+	Fl_PNG_Image imgFlag{string("Small_Squares/Flag.png").c_str()};
+	Fl_PNG_Image imgBomb{string("Small_Squares/GrayBomb.png").c_str()};
+	Fl_PNG_Image imgQuestionMark{string("Small_Squares/QuestionMark.png").c_str()};
+	Fl_PNG_Image imgRedBomb{string("Small_Squares/RedBomb.png").c_str()};
+	Fl_PNG_Image imgUnclicked{string("Small_Squares/Unclicked.png").c_str()};
+	Fl_PNG_Image imgXBomb{string("Small_Squares/XBomb.png").c_str()};
+}
+
+string toString(void* p)
+{
+	ostringstream os;
+	os<<p;
+	return os.str();
+}
+
+struct MyBox:Fl_Box
+{
+	MyBox(int x, int y, int w, int h, const char * 	l = 0 )
+		:Fl_Box(x,y,w,h,l)
+	{
+	}
+	virtual int handle(int event);
+};
+
+int MyBox::handle(int event)
+{
+	if (event==FL_PUSH) 
+	{
+		do_callback();
+		clear_changed();
+		return 1;
+	}
+	return 0;
+}
+
+struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 {
 	enum class State {unclicked, clicked, flag, question};
 	
-	const int tileSide = 16 ;
+	static constexpr int tileSide = 16 ;
 	
 	public:
 		Tile(Point xy, Callback cb)
-			:Button(xy, tileSide, tileSide, "", cb)
+			:Widget(xy, tileSide, tileSide, "", cb)
 		{
 		}
 		void changeState(State s);
+		void attach(Graph_lib::Window& win);
+		void over();
 	private:
 		bool mine;
 		int adjacent_mines;
 		State current_state;
 		
-		Fl_PNG_Image img1{string("Small_Squares/1.png").c_str()};
-		Fl_PNG_Image img2{string("Small_Squares/2.png").c_str()};
-		Fl_PNG_Image img3{string("Small_Squares/3.png").c_str()};
-		Fl_PNG_Image img4{string("Small_Squares/4.png").c_str()};
-		Fl_PNG_Image img5{string("Small_Squares/5.png").c_str()};
-		Fl_PNG_Image img6{string("Small_Squares/6.png").c_str()};
-		Fl_PNG_Image img7{string("Small_Squares/7.png").c_str()};
-		Fl_PNG_Image img8{string("Small_Squares/8.png").c_str()};
-		Fl_PNG_Image imgBlank{string("Small_Squares/Blank.png").c_str()};
-		Fl_PNG_Image imgFlag{string("Small_Squares/Flag.png").c_str()};
-		Fl_PNG_Image imgBomb{string("Small_Squares/GrayBomb.png").c_str()};
-		Fl_PNG_Image imgQuestionMark{string("Small_Squares/QuestionMark.png").c_str()};
-		Fl_PNG_Image imgRedBomb{string("Small_Squares/RedBomb.png").c_str()};
-		Fl_PNG_Image imgUnclicked{string("Small_Squares/Unclicked.png").c_str()};
-		Fl_PNG_Image imgXBomb{string("Small_Squares/XBomb.png").c_str()};
-		
 		void changeImage(Fl_PNG_Image& im); //possible public
 };
+
+void Tile::attach(Graph_lib::Window& win)
+{
+	pw = new MyBox(loc.x, loc.y, width, height, label.c_str());
+    pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
+    own = &win;
+	pw->align(FL_ALIGN_IMAGE_BACKDROP); //makes redraw all (bad & slow)
+	changeState(State::unclicked);
+}
 
 void Tile::changeImage(Fl_PNG_Image& im)
 {
 	pw->image(im);
+	pw->redraw_label(); //maybe get rid of later
 }
 
-void Tile::changeState(State s) //maybe should attach new one
+void Tile::changeState(State s) 
 {
 	switch(s)
 	{
-		case State::unclicked: changeImage(img1);
+		case State::unclicked: changeImage(TileImg::img1);
 							   break;
-		case State::clicked: changeImage(img2);
+		case State::clicked: changeImage(TileImg::img2);
 							 break;
-		case State::flag: changeImage(img3);
+		case State::flag: changeImage(TileImg::img3);
 						  break;
-		case State::question: changeImage(img4);
+		case State::question: changeImage(TileImg::img4);
 							  break;
+	}
+	current_state = s;
+}
+
+struct Game:Simple_window //make window later
+{
+	public:
+		Game(Point xy, const string& title );	
+	private:
+		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
+		
+		static void cb_tile_click (Address, Address);
+		void click (int row, int col);
+};
+
+Game::Game (Point xy, const string& title)
+	:Simple_window{xy, 600, 400, title}
+{
+	for (int r=0; r<10; r++)
+	{
+		board.push_back(vector<Tile*>{});
+		for (int c=0; c<10; c++)
+		{
+			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide},cb_tile_click));
+			attach(*board[r][c]);
+		}
 	}
 }
 
-void cb (Address, Address){}
+void Game::cb_tile_click (Address pt, Address pw )
+{
+	int row= reference_to<MyBox>(pt).y()/Tile::tileSide;
+	int col= reference_to<MyBox>(pt).x()/Tile::tileSide;
+	reference_to<Game>(pw).click(row, col);
+}
+
+void Game::click (int row, int col)
+{
+	board[row][col]->changeState(Tile::State::clicked);
+}
 
 int main()
 {
-<<<<<<< HEAD
-  cout<<"Aaron has edited via git shell\n";
-<<<<<<< HEAD
-  cout << "Hi" << endl;
-=======
-  cout<<"Rey Nick \n";
->>>>>>> origin/master
-=======
 	using namespace Graph_lib;
-	Simple_window win(Point{100,200},600,400,"Canvas"); 
-	Tile t{Point{20,20}, cb};
-	win.attach(t);
+	Game win(Point{100,200},"Canvas"); 
+	//Tile t{Point{20,20}, cb};
+	//win.attach(t);
 	win.wait_for_button();
->>>>>>> Add Headers
+	//t.changeState(Tile::State::clicked);
+	//win.wait_for_button();
 }
