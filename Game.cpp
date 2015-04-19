@@ -13,10 +13,7 @@ Game::Game (Point xy, const string& title)
 		}
 		
 	}
-	place_mine(3,7); //leave for now
-	place_mine(2,7);
-	place_mine(7,1);
-	place_mine(9,9);
+	mine_total=9; //leave for now
 }
 
 Game::~Game()
@@ -29,6 +26,24 @@ Game::~Game()
 		{
 			delete board[r][c];
 		}
+	}
+}
+
+void Game::place_mines(int num, int row, int col)
+{
+	srand (time(NULL)); //starts rand in different seeds
+	Tile* t = nullptr;
+	int r =0;
+	int c =0;
+	for (int x =0; x<num; x++)
+	{
+		do
+		{
+			r = rand() % board.size();
+			c = rand() % board[0].size();
+			t = board[row][col];
+		} while((r==row && c==col) || t->get_mine());
+		place_mine(r, c);
 	}
 }
 
@@ -52,7 +67,7 @@ void Game::place_mine (int row, int col)
 	}
 }
 
-void Game::show_mines(int row, int col)
+void Game::show_mines(int row, int col) //maybe change way work (not great for debug)
 {
 	int rMax=board.size();
 	int cMax=board[0].size();
@@ -73,6 +88,16 @@ void Game::lose_game(int row, int col) //incomplete
 	show_mines(row, col);
 }
 
+void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
+{
+	place_mines(mine_total, row, col);
+}
+
+void Game::win_game() //incomplete
+{
+	cout<<"You win\n";
+}
+
 void Game::cb_tile_click (Address pt, Address pw )
 {
 	int row= reference_to<MyBox>(pt).y()/Tile::tileSide;
@@ -80,8 +105,13 @@ void Game::cb_tile_click (Address pt, Address pw )
 	reference_to<Game>(pw).click(row, col);
 }
 
-void Game::click (int row, int col)
+void Game::click (int row, int col)  //should game start on any click or just left
 {
+	if(!game_started) 
+	{
+		start_game(row, col);
+		game_started=true;
+	}
 	int which= Fl::event_button();
 	switch (which)
 	{
@@ -109,11 +139,12 @@ void Game::left_click(int row, int col)
 		return;
 	}
 	
+	
+	int maxRow = board.size();
+	int maxCol = board[0].size();
 	//seems very inefficient (also in place_mine(row, col))
 	if (t->get_adj_mines()==0)
 	{
-		int maxRow = board.size();
-		int maxCol = board[0].size();
 		int right= min((row+2),maxRow);
 		int bottom = min((col+2),maxCol);
 		for (int r=max(row-1,0); r<right; r++)
@@ -124,6 +155,9 @@ void Game::left_click(int row, int col)
 			}
 		}
 	}
+	uncovered++;
+	
+	if (uncovered == (maxRow*maxCol - mine_total)) win_game();
 }
 
 void Game::middle_click(int row, int col) //not written

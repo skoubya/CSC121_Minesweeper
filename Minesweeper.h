@@ -78,11 +78,17 @@ struct Game:Simple_window //make window later
 	public:
 		Game(Point xy, const string& title );
 		~Game();
+		void place_mines (int num, int row, int col); //pass start click & make private later
 		void place_mine (int row, int col);  //make private later
 		void show_mines(int row, int col);  // which one to skip
 		void lose_game(int row, int col);
+		void start_game(int row, int col);  //which one clicked to start
+		void win_game();
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
+		bool game_started=false;
+		int mine_total;
+		int uncovered=0;
 		
 		static void cb_tile_click (Address, Address);
 		//setting mines should increment mine count of those around
