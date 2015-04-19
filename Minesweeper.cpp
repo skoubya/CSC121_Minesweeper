@@ -64,6 +64,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 			:Widget(xy, tileSide, tileSide, "", cb)
 		{
 		}
+		State get_state() const {return current_state;}
 		void changeState(State s);
 		void attach(Graph_lib::Window& win);
 		void over();
@@ -94,13 +95,13 @@ void Tile::changeState(State s)
 {
 	switch(s)
 	{
-		case State::unclicked: changeImage(TileImg::img1);
+		case State::unclicked: changeImage(TileImg::imgUnclicked);
 							   break;
-		case State::clicked: changeImage(TileImg::img2);
+		case State::clicked: changeImage(TileImg::imgBlank); //temporary
 							 break;
-		case State::flag: changeImage(TileImg::img3);
+		case State::flag: changeImage(TileImg::imgFlag);
 						  break;
-		case State::question: changeImage(TileImg::img4);
+		case State::question: changeImage(TileImg::imgQuestionMark);
 							  break;
 	}
 	current_state = s;
@@ -116,6 +117,9 @@ struct Game:Simple_window //make window later
 		
 		static void cb_tile_click (Address, Address);
 		void click (int row, int col);
+		void left_click(int row, int col);
+		void middle_click(int row, int col);
+		void right_click(int row, int col);
 };
 
 Game::Game (Point xy, const string& title)
@@ -154,7 +158,40 @@ void Game::cb_tile_click (Address pt, Address pw )
 
 void Game::click (int row, int col)
 {
-	board[row][col]->changeState(Tile::State::clicked);
+	int which= Fl::event_button();
+	switch (which)
+	{
+		case FL_LEFT_MOUSE: left_click(row, col);
+							break;
+		case FL_MIDDLE_MOUSE: middle_click(row, col);
+							  break;
+		case FL_RIGHT_MOUSE: right_click(row, col);
+							 break;
+	}
+}
+
+void Game::left_click(int row, int col) //not written
+{
+}
+
+void Game::right_click(int row, int col)
+{
+	Tile* t =board[row][col];
+	Tile::State cur = t->get_state();
+	switch (cur)
+	{
+		case Tile::State::clicked: break;
+		case Tile::State::unclicked: t->changeState(Tile::State::flag);
+									 break;
+		case Tile::State::flag: t->changeState(Tile::State::question);
+								break;
+		case Tile::State::question: t->changeState(Tile::State::unclicked);
+									break;
+	}
+}
+
+void Game::middle_click(int row, int col) //not written
+{
 }
 
 int main()
