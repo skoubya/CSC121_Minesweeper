@@ -68,10 +68,12 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		void changeState(State s);
 		void attach(Graph_lib::Window& win);
 		void over();
+		void set_adj_mines(int numMines);
 	private:
-		bool mine;
-		int adjacent_mines;
+		bool mine = false; //check for
+		int adj_mines=0;  //check for
 		State current_state;
+		Fl_PNG_Image* clickedImg = nullptr;  //check for
 		
 		void changeImage(Fl_PNG_Image& im); //possible public
 };
@@ -83,6 +85,32 @@ void Tile::attach(Graph_lib::Window& win)
     own = &win;
 	pw->align(FL_ALIGN_IMAGE_BACKDROP); 
 	changeState(State::unclicked);
+}
+
+void Tile::set_adj_mines(int numMines)
+{
+	adj_mines=numMines;
+	switch (adj_mines)
+	{
+		case 0: clickedImg = &TileImg::imgBlank;
+				break;
+		case 1: clickedImg = &TileImg::img1;
+				break;
+		case 2: clickedImg = &TileImg::img2;
+				break;
+		case 3: clickedImg = &TileImg::img3;
+				break;
+		case 4: clickedImg = &TileImg::img4;
+				break;
+		case 5: clickedImg = &TileImg::img5;
+				break;
+		case 6: clickedImg = &TileImg::img6;
+				break;
+		case 7: clickedImg = &TileImg::img7;
+				break;
+		case 8: clickedImg = &TileImg::img8;
+				break;
+	}
 }
 
 void Tile::changeImage(Fl_PNG_Image& im)
@@ -97,7 +125,7 @@ void Tile::changeState(State s)
 	{
 		case State::unclicked: changeImage(TileImg::imgUnclicked);
 							   break;
-		case State::clicked: changeImage(TileImg::imgBlank); //temporary
+		case State::clicked: changeImage(*clickedImg);
 							 break;
 		case State::flag: changeImage(TileImg::imgFlag);
 						  break;
@@ -116,6 +144,7 @@ struct Game:Simple_window //make window later
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
 		
 		static void cb_tile_click (Address, Address);
+		//setting mines should increment mine count of those around
 		void click (int row, int col);
 		void left_click(int row, int col);
 		void middle_click(int row, int col);
@@ -132,7 +161,9 @@ Game::Game (Point xy, const string& title)
 		{
 			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide},cb_tile_click));
 			attach(*board[r][c]);
+			board[r][c]->set_adj_mines((c+r)%9); //leave for now
 		}
+		
 	}
 }
 
@@ -170,8 +201,14 @@ void Game::click (int row, int col)
 	}
 }
 
-void Game::left_click(int row, int col) //not written
+void Game::left_click(int row, int col) //incomplete
 {
+	Tile* t =board[row][col];
+	if (t->get_state()==Tile::State::flag)
+	{
+		return; //do nothing
+	}
+	t->changeState(Tile::State::clicked);
 }
 
 void Game::right_click(int row, int col)
@@ -198,9 +235,5 @@ int main()
 {
 	using namespace Graph_lib;
 	Game win(Point{100,200},"Canvas"); 
-	//Tile t{Point{20,20}, cb};
-	//win.attach(t);
 	win.wait_for_button();
-	//t.changeState(Tile::State::clicked);
-	//win.wait_for_button();
 }
