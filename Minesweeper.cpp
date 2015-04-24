@@ -1,7 +1,5 @@
 #include "Minesweeper.h"
 
-//there is a problem w/ some numbers thinking they have a bomb but don't
-
 int MyBox::handle(int event)
 {
 	if (event==FL_PUSH) 

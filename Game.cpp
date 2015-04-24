@@ -41,7 +41,7 @@ void Game::place_mines(int num, int row, int col)
 		{
 			r = rand() % board.size();
 			c = rand() % board[0].size();
-			t = board[row][col];
+			t = board[r][c];
 		} while((r==row && c==col) || t->get_mine());
 		place_mine(r, c);
 	}
@@ -52,11 +52,11 @@ void Game::place_mine (int row, int col)
 	board[row][col]->put_mine();
 	int maxRow = board.size();
 	int maxCol = board[0].size();
-	int right= min((row+2),maxRow);
-	int bottom = min((col+2),maxCol);
-	for (int r=max(row-1,0); r<right; r++)
+	int bottom= min((row+2),maxRow);
+	int right = min((col+2),maxCol);
+	for (int r=max(row-1,0); r<bottom; r++)
 	{
-		for (int c=max(col-1,0); c<bottom; c++)
+		for (int c=max(col-1,0); c<right; c++)
 		{
 			Tile* temp = board[r][c];
 			if (!(temp->get_mine()))
@@ -105,13 +105,8 @@ void Game::cb_tile_click (Address pt, Address pw )
 	reference_to<Game>(pw).click(row, col);
 }
 
-void Game::click (int row, int col)  //should game start on any click or just left
+void Game::click (int row, int col) 
 {
-	if(!game_started) 
-	{
-		start_game(row, col);
-		game_started=true;
-	}
 	int which= Fl::event_button();
 	switch (which)
 	{
@@ -126,6 +121,11 @@ void Game::click (int row, int col)  //should game start on any click or just le
 
 void Game::left_click(int row, int col)
 {
+	if(!game_started) 
+	{
+		start_game(row, col);
+		game_started=true;
+	}
 	Tile* t =board[row][col];
 	Tile::State curr = t->get_state();
 	if (curr==Tile::State::flag || curr==Tile::State::clicked)
@@ -145,13 +145,13 @@ void Game::left_click(int row, int col)
 	//seems very inefficient (also in place_mine(row, col))
 	if (t->get_adj_mines()==0)
 	{
-		int right= min((row+2),maxRow);
-		int bottom = min((col+2),maxCol);
-		for (int r=max(row-1,0); r<right; r++)
+		int bottom= min((row+2),maxRow);
+		int right = min((col+2),maxCol);
+		for (int r=max(row-1,0); r<bottom; r++)
 		{
-			for (int c=max(col-1,0); c<bottom; c++)
+			for (int c=max(col-1,0); c<right; c++)
 			{
-				if (r!= row || c != col) left_click(r,c);
+				left_click(r,c); //no infinite loop because return if clicked
 			}
 		}
 	}
@@ -162,6 +162,17 @@ void Game::left_click(int row, int col)
 
 void Game::middle_click(int row, int col) //not written
 {
+	int maxRow = board.size();
+	int maxCol = board[0].size();
+	int bottom= min((row+2),maxRow);
+	int right = min((col+2),maxCol);
+	for (int r=max(row-1,0); r<bottom; r++)
+	{
+		for (int c=max(col-1,0); c<right; c++)
+		{
+			left_click(r,c);
+		}
+	}
 }
 
 void Game::right_click(int row, int col)
