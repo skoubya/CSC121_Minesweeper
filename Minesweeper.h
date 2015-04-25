@@ -4,12 +4,14 @@
 
 #include "std_lib_facilities_4.h"
 #include "Simple_window.h"
+#include "Window.h"
 #include "Graph.h"
 #include "GUI.h"
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl.H>
+#include <FL/Fl_Timer.H>
 
 #ifndef debug
 #define debug true
@@ -35,6 +37,11 @@ namespace TileImg
 	Fl_PNG_Image imgRedBomb{string("Small_Squares/RedBomb.png").c_str()};
 	Fl_PNG_Image imgUnclicked{string("Small_Squares/Unclicked.png").c_str()};
 	Fl_PNG_Image imgXBomb{string("Small_Squares/XBomb.png").c_str()};
+	Fl_PNG_Image imgSmile{string("Small_Squares/Smile.png").c_str()};
+	Fl_PNG_Image imgSmileDown{string("Small_Squares/SmileDown.png").c_str()};
+	Fl_PNG_Image imgDead{string("Small_Squares/Dead.png").c_str()};
+	Fl_PNG_Image imgCool{string("Small_Squares/Cool.png").c_str()};
+	Fl_PNG_Image imgScared{string("Small_Squares/Scared.png").c_str()};
 }
 
 #endif
@@ -78,9 +85,24 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		void changeImage(Fl_PNG_Image& im); //possible public
 };
 
-struct Game:Simple_window //make window later
+struct Smile:Widget
 {
 	public:
+		Smile(Point xy, Callback cb)
+			:Widget(xy, 26, 26, "", cb)
+		{
+		}
+		void change_image(Fl_PNG_Image& im);
+		void attach(Graph_lib::Window& win);
+	private:
+		
+};
+
+struct Game: Graph_lib::Window //make window later
+{
+	public:
+		static constexpr int y_offset = 40;
+	
 		Game(Point xy, const string& title );
 		~Game();
 		void place_mines (int num, int row, int col); //pass start click & make private later
@@ -92,7 +114,7 @@ struct Game:Simple_window //make window later
 		void restart_game();
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
-		Tile* smiley; //maybe change type
+		Smile* smiley; //maybe change type
 		bool game_started=false;
 		bool game_over = false;
 		int mine_total;
@@ -102,8 +124,28 @@ struct Game:Simple_window //make window later
 		static void cb_restart_click (Address, Address);
 		//setting mines should increment mine count of those around
 		void click (int row, int col);
+		void show_scared();
 		void left_click(int row, int col);
 		void middle_click(int row, int col);
 		void right_click(int row, int col);
+};
+
+struct Counter : Shape
+{
+		public:
+		Counter(Point xy, int w, int h)
+			:t{new Text(xy, "000")}, r{new Rectangle(xy, w, h)}
+		{
+			add(xy);
+			r->set_color(Color{Color::Color_type::black});
+			r->set_fill_color(Color{Color::Color_type::black});
+			/*t->set_color(Color{Color::Color_type::red});
+			t->set_font_size(30);
+			t->set_font(Graph_lib::Font{Graph_lib::Font::Font_type::helvetica});*/
+		}
+		void draw_lines() const;
+	private:
+		Rectangle* r;
+		Text* t;
 };
 #endif

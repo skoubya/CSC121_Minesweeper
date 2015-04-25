@@ -1,25 +1,36 @@
 #include "Minesweeper.h"
+#include "forms_timer.cxx"
 
 Game::Game (Point xy, const string& title)
-	:Simple_window{xy, 600, 400, title}
+	:Graph_lib::Window{xy, 160,160+y_offset, title}
 {
 	resizable(NULL);
-	size_range(600,400,600,400);
+	size_range(x_max(),y_max(),x_max(),y_max());
+	
+	smiley = new Smile(Point{(x_max()-26)/2, (y_offset-26)/2}, cb_restart_click);
+	attach(*smiley);
+	
 	for (int r=0; r<10; r++)
 	{
 		board.push_back(vector<Tile*>{});
 		for (int c=0; c<10; c++)
 		{
-			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide},cb_tile_click));
+			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide+y_offset},cb_tile_click));
 			attach(*board[r][c]);
 		}
 		
 	}
 	mine_total=9; //leave for now
 	
-	//probably not how should do
-	smiley = new Tile(Point{200, 200}, cb_restart_click);
-	attach(*smiley);
+	Counter time(Point{x_max()-50, 0}, 50, y_offset); 
+	attach(time);
+	
+	Text txt{Point{0,0}, "Hello"};
+	attach(txt);
+	txt.set_color(Color::Color_type::red);
+	cout<<txt.color().as_int()<<endl;
+
+	Fl::run();
 }
 
 Game::~Game()
@@ -94,6 +105,7 @@ void Game::show_mines(int row, int col) //maybe change way work (not great for d
 void Game::lose_game(int row, int col) //incomplete
 {
 	show_mines(row, col);
+	smiley->change_image(TileImg::imgDead);
 	game_over = true;
 }
 
@@ -104,7 +116,6 @@ void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
 
 void Game::win_game() //incomplete (maybe separate into different functions)
 {
-	cout<<"You win\n";
 	int rMax=board.size();
 	int cMax=board[0].size();
 	for (int r=0; r<rMax; r++)
@@ -117,32 +128,48 @@ void Game::win_game() //incomplete (maybe separate into different functions)
 			}
 		}
 	}
+	smiley->change_image(TileImg::imgCool);
 	game_over = true;
 }
 
 void Game::restart_game()
 {
-	int rMax=board.size();
-	int cMax=board[0].size();
-	for (int r=0; r<rMax; r++)
+	if (Fl::event() == FL_PUSH)
 	{
-		for (int c = 0; c<cMax; c++)
+		smiley->change_image(TileImg::imgSmileDown);
+	}
+	else
+	{
+		int rMax=board.size();
+		int cMax=board[0].size();
+		for (int r=0; r<rMax; r++)
 		{
-			board[r][c]->set_adj_mines(0);
-			board[r][c]->put_mine(false);
-			board[r][c]->change_state(Tile::State::unclicked);
-			game_over = false;
-			game_started = false;
-			uncovered=0;
+			for (int c = 0; c<cMax; c++)
+			{
+				board[r][c]->set_adj_mines(0);
+				board[r][c]->put_mine(false);
+				board[r][c]->change_state(Tile::State::unclicked);
+				game_over = false;
+				game_started = false;
+				uncovered=0;
+			}
 		}
+		smiley->change_image(TileImg::imgSmile);
 	}
 }
 
 void Game::cb_tile_click (Address pt, Address pw )
 {
-	int row= reference_to<MyBox>(pt).y()/Tile::tileSide;
-	int col= reference_to<MyBox>(pt).x()/Tile::tileSide;
-	reference_to<Game>(pw).click(row, col);
+	if (Fl::event() == FL_RELEASE)
+	{
+		int row= (reference_to<MyBox>(pt).y()-y_offset)/Tile::tileSide;
+		int col= reference_to<MyBox>(pt).x()/Tile::tileSide;
+		reference_to<Game>(pw).click(row, col);
+	}
+	else
+	{
+		reference_to<Game>(pw).show_scared();
+	}
 }
 
 void Game::cb_restart_click (Address, Address pw)
@@ -153,6 +180,7 @@ void Game::cb_restart_click (Address, Address pw)
 void Game::click (int row, int col) 
 {
 	if (game_over) return;
+	smiley->change_image(TileImg::imgSmile);
 	int which= Fl::event_button();
 	switch (which)
 	{
@@ -163,6 +191,11 @@ void Game::click (int row, int col)
 		case FL_RIGHT_MOUSE: right_click(row, col);
 							 break;
 	}
+}
+
+void Game::show_scared()
+{
+	if(!game_over) smiley->change_image(TileImg::imgScared);
 }
 
 void Game::left_click(int row, int col)
@@ -235,4 +268,10 @@ void Game::right_click(int row, int col)
 		case Tile::State::question: t->change_state(Tile::State::unclicked);
 									break;
 	}
+}
+
+void Counter::draw_lines() const
+{
+	r->draw_lines();
+	t->draw_lines();
 }

@@ -83,3 +83,18 @@ void Tile::changeImage(Fl_PNG_Image& im)
 	pw->image(im);
 	pw->redraw(); //maybe get rid of later
 }
+
+void Smile::change_image(Fl_PNG_Image& im)
+{
+	pw->image(im);
+	pw->redraw(); //maybe get rid of later
+}
+
+void Smile::attach(Graph_lib::Window& win)
+{
+	pw = new MyBox(loc.x, loc.y, width, height, label.c_str());
+    pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
+    own = &win;
+	pw->align(FL_ALIGN_IMAGE_BACKDROP);
+	change_image(TileImg::imgSmile);
+}

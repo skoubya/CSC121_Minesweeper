@@ -2,7 +2,7 @@
 
 int MyBox::handle(int event)
 {
-	if (event==FL_PUSH) 
+	if (event==FL_PUSH || event==FL_RELEASE) 
 	{
 		do_callback();
 		clear_changed();
@@ -14,6 +14,5 @@ int MyBox::handle(int event)
 int main()
 {
 	using namespace Graph_lib;
-	Game win(Point{100,200},"Canvas"); 
-	win.wait_for_button();
+	Game win(Point{100,200},"Minesweeper"); 
 }
