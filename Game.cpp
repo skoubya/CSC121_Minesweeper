@@ -16,6 +16,10 @@ Game::Game (Point xy, const string& title)
 		
 	}
 	mine_total=9; //leave for now
+	
+	//probably not how should do
+	smiley = new Tile(Point{200, 200}, cb_restart_click);
+	attach(*smiley);
 }
 
 Game::~Game()
@@ -29,6 +33,7 @@ Game::~Game()
 			delete board[r][c];
 		}
 	}
+	delete smiley; //maybe not needed
 }
 
 void Game::place_mines(int num, int row, int col)
@@ -46,12 +51,13 @@ void Game::place_mines(int num, int row, int col)
 			t = board[r][c];
 		} while((r==row && c==col) || t->get_mine());
 		place_mine(r, c);
+		if (debug) t->change_state(Tile::State::unclicked);
 	}
 }
 
 void Game::place_mine (int row, int col)
 {
-	board[row][col]->put_mine();
+	board[row][col]->put_mine(true);
 	int maxRow = board.size();
 	int maxCol = board[0].size();
 	int bottom= min((row+2),maxRow);
@@ -114,11 +120,34 @@ void Game::win_game() //incomplete (maybe separate into different functions)
 	game_over = true;
 }
 
+void Game::restart_game()
+{
+	int rMax=board.size();
+	int cMax=board[0].size();
+	for (int r=0; r<rMax; r++)
+	{
+		for (int c = 0; c<cMax; c++)
+		{
+			board[r][c]->set_adj_mines(0);
+			board[r][c]->put_mine(false);
+			board[r][c]->change_state(Tile::State::unclicked);
+			game_over = false;
+			game_started = false;
+			uncovered=0;
+		}
+	}
+}
+
 void Game::cb_tile_click (Address pt, Address pw )
 {
 	int row= reference_to<MyBox>(pt).y()/Tile::tileSide;
 	int col= reference_to<MyBox>(pt).x()/Tile::tileSide;
 	reference_to<Game>(pw).click(row, col);
+}
+
+void Game::cb_restart_click (Address, Address pw)
+{
+	reference_to<Game>(pw).restart_game();
 }
 
 void Game::click (int row, int col) 

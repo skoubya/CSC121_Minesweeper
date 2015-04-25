@@ -4,7 +4,8 @@ void Tile::change_state(State s)
 {
 	switch(s)
 	{
-		case State::unclicked: changeImage(TileImg::imgUnclicked);
+		case State::unclicked: if (get_mine() && debug) changeImage(TileImg::imgBomb);
+							   else changeImage(TileImg::imgUnclicked);
 							   break;
 		case State::clicked: changeImage(*clicked_img);
 							 break;
@@ -21,14 +22,15 @@ void Tile::attach(Graph_lib::Window& win)
 	pw = new MyBox(loc.x, loc.y, width, height, label.c_str());
     pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
     own = &win;
-	pw->align(FL_ALIGN_IMAGE_BACKDROP); 
+	pw->align(FL_ALIGN_IMAGE_BACKDROP);
 	change_state(State::unclicked);
 }
 
-void Tile::put_mine()
+void Tile::put_mine(bool put)
 {
-	mine=true;
-	clicked_img=&TileImg::imgRedBomb;
+	mine= put;
+	if(mine) clicked_img=&TileImg::imgRedBomb;
+	else clicked_img=&TileImg::imgBlank;
 }
 
 void Tile::add_adj_mines()

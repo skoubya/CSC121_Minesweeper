@@ -11,8 +11,13 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl.H>
 
+#ifndef debug
+#define debug true
+#endif
+
 #ifndef TileImg
 #define TileImg
+
 namespace TileImg
 {
 	Fl_PNG_Image img1{string("Small_Squares/1.png").c_str()};
@@ -58,7 +63,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		State get_state() const {return current_state;}
 		void change_state(State s);
 		void attach(Graph_lib::Window& win);
-		void put_mine();
+		void put_mine(bool put);
 		bool get_mine() const {return mine;}
 		void add_adj_mines();
 		void set_adj_mines(int numMines); //maybe make private
@@ -84,14 +89,17 @@ struct Game:Simple_window //make window later
 		void lose_game(int row, int col);
 		void start_game(int row, int col);  //which one clicked to start
 		void win_game();
+		void restart_game();
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
+		Tile* smiley; //maybe change type
 		bool game_started=false;
 		bool game_over = false;
 		int mine_total;
 		int uncovered=0;
 		
 		static void cb_tile_click (Address, Address);
+		static void cb_restart_click (Address, Address);
 		//setting mines should increment mine count of those around
 		void click (int row, int col);
 		void left_click(int row, int col);
