@@ -87,6 +87,7 @@ struct Game:Simple_window //make window later
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
 		bool game_started=false;
+		bool game_over = false;
 		int mine_total;
 		int uncovered=0;
 		

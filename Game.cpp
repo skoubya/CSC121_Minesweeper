@@ -3,6 +3,8 @@
 Game::Game (Point xy, const string& title)
 	:Simple_window{xy, 600, 400, title}
 {
+	resizable(NULL);
+	size_range(600,400,600,400);
 	for (int r=0; r<10; r++)
 	{
 		board.push_back(vector<Tile*>{});
@@ -86,6 +88,7 @@ void Game::show_mines(int row, int col) //maybe change way work (not great for d
 void Game::lose_game(int row, int col) //incomplete
 {
 	show_mines(row, col);
+	game_over = true;
 }
 
 void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
@@ -93,9 +96,22 @@ void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
 	place_mines(mine_total, row, col);
 }
 
-void Game::win_game() //incomplete
+void Game::win_game() //incomplete (maybe separate into different functions)
 {
 	cout<<"You win\n";
+	int rMax=board.size();
+	int cMax=board[0].size();
+	for (int r=0; r<rMax; r++)
+	{
+		for (int c = 0; c<cMax; c++)
+		{
+			if (board[r][c]->get_mine())
+			{
+				board[r][c]->change_state(Tile::State::flag);
+			}
+		}
+	}
+	game_over = true;
 }
 
 void Game::cb_tile_click (Address pt, Address pw )
@@ -107,6 +123,7 @@ void Game::cb_tile_click (Address pt, Address pw )
 
 void Game::click (int row, int col) 
 {
+	if (game_over) return;
 	int which= Fl::event_button();
 	switch (which)
 	{
