@@ -1,35 +1,17 @@
 #include "Minesweeper.h"
-#include "forms_timer.cxx"
 
 Game::Game (Point xy, const string& title)
-	:Graph_lib::Window{xy, 160,160+y_offset, title}
+	:Graph_lib::Window{xy, 0,0, title}
 {
-	resizable(NULL);
-	size_range(x_max(),y_max(),x_max(),y_max());
-	
-	smiley = new Smile(Point{(x_max()-26)/2, (y_offset-26)/2}, cb_restart_click);
+	mine_counter = new Counter{Point{0,5}, 50, y_offset-10}; //doesn't move
+	attach(*mine_counter);
+	timer = new Counter(Point{0, 0}, 50, y_offset-10); 
+	attach(*timer);
+	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
+	create_board(10,10,9);
 	
-	for (int r=0; r<10; r++)
-	{
-		board.push_back(vector<Tile*>{});
-		for (int c=0; c<10; c++)
-		{
-			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide+y_offset},cb_tile_click));
-			attach(*board[r][c]);
-		}
-		
-	}
-	mine_total=9; //leave for now
-	
-	Counter time(Point{x_max()-50, 0}, 50, y_offset); 
-	attach(time);
-	
-	Text txt{Point{0,0}, "Hello"};
-	attach(txt);
-	txt.set_color(Color::Color_type::red);
-	cout<<txt.color().as_int()<<endl;
-
+	create_board(16, 30, 99);
 	Fl::run();
 }
 
@@ -102,6 +84,49 @@ void Game::show_mines(int row, int col) //maybe change way work (not great for d
 	}
 }
 
+void Game::clear_board()
+{
+	while (board.size()>0)
+	{
+		int lastR = board.size()-1;
+		while (board[lastR].size()>0)
+		{
+			int lastC = board[lastR].size()-1;
+			detach(*board[lastR][lastC]);
+			delete board[lastR][lastC];
+			board[lastR].pop_back();
+		}
+		board.pop_back();
+	}
+}
+
+void Game::create_board(int rows, int cols, int mines)
+{
+	clear_board();
+	
+	resize(cols*Tile::tileSide, rows*Tile::tileSide + y_offset);
+	resizable(NULL);
+	size_range(x_max(),y_max(),x_max(),y_max());
+	
+	mine_counter->set_value(mines);
+	
+	smiley->move(Point{(x_max()-26)/2, (y_offset-26)/2});
+	
+	timer->move(Point{x_max()-50, 5});
+	
+	for (int r=0; r<rows; r++)
+	{
+		board.push_back(vector<Tile*>{});
+		for (int c=0; c<cols; c++)
+		{
+			board[r].push_back(new Tile(Point{c*Tile::tileSide,r*Tile::tileSide+y_offset},cb_tile_click));
+			attach(*board[r][c]);
+		}
+		
+	}
+	mine_total=mines;
+}
+
 void Game::lose_game(int row, int col) //incomplete
 {
 	show_mines(row, col);
@@ -140,6 +165,7 @@ void Game::restart_game()
 	}
 	else
 	{
+		mine_counter->set_value(mine_total);
 		int rMax=board.size();
 		int cMax=board[0].size();
 		for (int r=0; r<rMax; r++)
@@ -262,8 +288,10 @@ void Game::right_click(int row, int col)
 	{
 		case Tile::State::clicked: break;
 		case Tile::State::unclicked: t->change_state(Tile::State::flag);
+									 mine_counter->increment_value(-1);
 									 break;
 		case Tile::State::flag: t->change_state(Tile::State::question);
+								mine_counter->increment_value(1);
 								break;
 		case Tile::State::question: t->change_state(Tile::State::unclicked);
 									break;
@@ -272,6 +300,31 @@ void Game::right_click(int row, int col)
 
 void Counter::draw_lines() const
 {
-	r->draw_lines();
-	t->draw_lines();
+	Shape::draw_lines();
+	t->set_font_size(30);
+	t->set_font(Graph_lib::Font{Graph_lib::Font::Font_type::helvetica});
+	t->set_color(Color::Color_type::red);
+	r->set_color(Color{Color::Color_type::black});
+	r->set_fill_color(Color{Color::Color_type::black});
+	
+	r->draw();
+	t->draw();
+}
+
+void Counter::move(Point xy)
+{
+	t->move(xy.x-point(0).x,xy.y-point(0).y); //maybe inefficent
+	r->move(xy.x-point(0).x,xy.y-point(0).y);
+	set_point(0, xy);
+}
+
+void Counter::set_value(int val)
+{
+	value  = val;
+	ostringstream os;
+	os<<val;
+	string s = os.str();
+	while (s.size()<3) s.insert(0,"0");
+	t->set_label(s);
+	//draw_lines();
 }

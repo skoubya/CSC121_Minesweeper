@@ -94,8 +94,27 @@ struct Smile:Widget
 		}
 		void change_image(Fl_PNG_Image& im);
 		void attach(Graph_lib::Window& win);
+		void move(Point xy) {Widget::move(xy.x-loc.x,xy.y-loc.y);}
 	private:
 		
+};
+
+struct Counter : Shape
+{
+		public:
+		Counter(Point xy, int w, int h)
+			:t{new Text(Point{xy.x, xy.y+11+h/2}, "000")}, r{new Rectangle(xy, w, h)}
+		{
+			add(xy);
+		}
+		void draw_lines() const;
+		void move(Point xy);
+		void set_value(int val);
+		void increment_value(int change) {set_value(value+change);};
+	private:
+		Rectangle* r;
+		Text* t;
+		int value;
 };
 
 struct Game: Graph_lib::Window //make window later
@@ -108,13 +127,17 @@ struct Game: Graph_lib::Window //make window later
 		void place_mines (int num, int row, int col); //pass start click & make private later
 		void place_mine (int row, int col);  //make private later
 		void show_mines(int row, int col);  // which one to skip
+		void clear_board();
+		void create_board(int rows, int cols, int mines);
 		void lose_game(int row, int col);
 		void start_game(int row, int col);  //which one clicked to start
 		void win_game();
 		void restart_game();
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
-		Smile* smiley; //maybe change type
+		Smile* smiley;
+		Counter* mine_counter;
+		Counter* timer;
 		bool game_started=false;
 		bool game_over = false;
 		int mine_total;
@@ -128,24 +151,5 @@ struct Game: Graph_lib::Window //make window later
 		void left_click(int row, int col);
 		void middle_click(int row, int col);
 		void right_click(int row, int col);
-};
-
-struct Counter : Shape
-{
-		public:
-		Counter(Point xy, int w, int h)
-			:t{new Text(xy, "000")}, r{new Rectangle(xy, w, h)}
-		{
-			add(xy);
-			r->set_color(Color{Color::Color_type::black});
-			r->set_fill_color(Color{Color::Color_type::black});
-			/*t->set_color(Color{Color::Color_type::red});
-			t->set_font_size(30);
-			t->set_font(Graph_lib::Font{Graph_lib::Font::Font_type::helvetica});*/
-		}
-		void draw_lines() const;
-	private:
-		Rectangle* r;
-		Text* t;
 };
 #endif
