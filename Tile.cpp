@@ -98,3 +98,40 @@ void Smile::attach(Graph_lib::Window& win)
 	pw->align(FL_ALIGN_IMAGE_BACKDROP);
 	change_image(TileImg::imgSmile);
 }
+
+void CountBox::draw()
+{	
+	r->draw();
+	t->draw();
+}
+
+void CountBox::move(int nx, int ny)
+{
+	Point p =r->point(0);
+	t->move(nx-p.x,ny-p.y); //maybe inefficent
+	r->move(nx-p.x,ny-p.y);
+	Fl_Widget::position(nx,ny);
+	redraw();
+}
+
+void Counter::attach(Graph_lib::Window& win)
+{
+	pw = new CountBox(loc.x, loc.y, width, height, label.c_str());
+    pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
+    own = &win;
+}
+
+void Counter::set_value(int val)
+{
+	value  = val;
+	ostringstream os;
+	os<<val;
+	string s = os.str();
+	while (s.size()<3) 
+	{
+		if(s[0]=='-') s.insert(1,"0");
+		else s.insert(0,"0");
+	}
+	static_cast<CountBox*>(pw)->change_text(s);
+	pw->redraw();
+}

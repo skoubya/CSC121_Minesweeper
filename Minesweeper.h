@@ -13,8 +13,9 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Timer.H>
 
+//debug mode?
 #ifndef debug
-#define debug true
+#define debug false
 #endif
 
 #ifndef TileImg
@@ -76,6 +77,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		void set_adj_mines(int numMines); //maybe make private
 		int get_adj_mines() const {return adj_mines;}
 		void loss();
+
 	private:
 		bool mine;
 		int adj_mines;  
@@ -99,21 +101,40 @@ struct Smile:Widget
 		
 };
 
-struct Counter : Shape
+struct CountBox : Fl_Widget
 {
-		public:
-		Counter(Point xy, int w, int h)
-			:t{new Text(Point{xy.x, xy.y+11+h/2}, "000")}, r{new Rectangle(xy, w, h)}
+	public:
+		CountBox(int x, int y, int w, int h, const char * 	l = 0)
+			:Fl_Widget{x,y,w,h,l},
+			 t{new Text(Point{x, y+11+h/2}, "000")}, r{new Rectangle(Point{x,y}, w, h)}
 		{
-			add(xy);
+			t->set_font_size(30);
+			t->set_font(Graph_lib::Font{Graph_lib::Font::Font_type::helvetica});
+			t->set_color(Color::Color_type::red);
+			r->set_color(Color{Color::Color_type::black});
+			r->set_fill_color(Color{Color::Color_type::black});
 		}
-		void draw_lines() const;
-		void move(Point xy);
-		void set_value(int val);
-		void increment_value(int change) {set_value(value+change);};
+		void draw();
+		void change_text(string s) {t->set_label(s);}
+		void move(int nx, int ny);
 	private:
 		Rectangle* r;
 		Text* t;
+};
+
+struct Counter : Widget
+{
+		public:
+		Counter(Point xy, int w, int h, Callback cb)
+			:Widget(xy, w, h, "", cb)
+		{
+		}
+		void attach(Graph_lib::Window& win);
+		void move(Point xy){static_cast<CountBox*>(pw)->move(xy.x, xy.y);}
+		void set_value(int val);
+		void increment_value(int change) {set_value(value+change);}
+		
+	private:
 		int value;
 };
 
@@ -133,6 +154,7 @@ struct Game: Graph_lib::Window //make window later
 		void start_game(int row, int col);  //which one clicked to start
 		void win_game();
 		void restart_game();
+
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
 		Smile* smiley;

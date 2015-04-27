@@ -3,9 +3,9 @@
 Game::Game (Point xy, const string& title)
 	:Graph_lib::Window{xy, 0,0, title}
 {
-	mine_counter = new Counter{Point{0,5}, 50, y_offset-10}; //doesn't move
+	mine_counter = new Counter{Point{0,5}, 50, y_offset-10, [](Address, Address){}}; //doesn't move
 	attach(*mine_counter);
-	timer = new Counter(Point{0, 0}, 50, y_offset-10); 
+	timer = new Counter(Point{0, 0}, 50, y_offset-10, [](Address, Address){}); 
 	attach(*timer);
 	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
@@ -103,7 +103,6 @@ void Game::clear_board()
 void Game::create_board(int rows, int cols, int mines)
 {
 	clear_board();
-	
 	resize(cols*Tile::tileSide, rows*Tile::tileSide + y_offset);
 	resizable(NULL);
 	size_range(x_max(),y_max(),x_max(),y_max());
@@ -166,6 +165,7 @@ void Game::restart_game()
 	else
 	{
 		mine_counter->set_value(mine_total);
+		damage(FL_DAMAGE_CHILD);
 		int rMax=board.size();
 		int cMax=board[0].size();
 		for (int r=0; r<rMax; r++)
@@ -192,7 +192,7 @@ void Game::cb_tile_click (Address pt, Address pw )
 		int col= reference_to<MyBox>(pt).x()/Tile::tileSide;
 		reference_to<Game>(pw).click(row, col);
 	}
-	else
+	else if (Fl::event_button()!=FL_RIGHT_MOUSE)
 	{
 		reference_to<Game>(pw).show_scared();
 	}
@@ -265,7 +265,7 @@ void Game::left_click(int row, int col)
 	if (uncovered == (maxRow*maxCol - mine_total)) win_game();
 }
 
-void Game::middle_click(int row, int col) //not written
+void Game::middle_click(int row, int col)
 {
 	int maxRow = board.size();
 	int maxCol = board[0].size();
@@ -289,42 +289,13 @@ void Game::right_click(int row, int col)
 		case Tile::State::clicked: break;
 		case Tile::State::unclicked: t->change_state(Tile::State::flag);
 									 mine_counter->increment_value(-1);
+									 damage(FL_DAMAGE_CHILD);
 									 break;
 		case Tile::State::flag: t->change_state(Tile::State::question);
 								mine_counter->increment_value(1);
+								damage(FL_DAMAGE_CHILD);
 								break;
 		case Tile::State::question: t->change_state(Tile::State::unclicked);
 									break;
 	}
-}
-
-void Counter::draw_lines() const
-{
-	Shape::draw_lines();
-	t->set_font_size(30);
-	t->set_font(Graph_lib::Font{Graph_lib::Font::Font_type::helvetica});
-	t->set_color(Color::Color_type::red);
-	r->set_color(Color{Color::Color_type::black});
-	r->set_fill_color(Color{Color::Color_type::black});
-	
-	r->draw();
-	t->draw();
-}
-
-void Counter::move(Point xy)
-{
-	t->move(xy.x-point(0).x,xy.y-point(0).y); //maybe inefficent
-	r->move(xy.x-point(0).x,xy.y-point(0).y);
-	set_point(0, xy);
-}
-
-void Counter::set_value(int val)
-{
-	value  = val;
-	ostringstream os;
-	os<<val;
-	string s = os.str();
-	while (s.size()<3) s.insert(0,"0");
-	t->set_label(s);
-	//draw_lines();
 }
