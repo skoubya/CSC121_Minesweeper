@@ -123,6 +123,7 @@ void Counter::attach(Graph_lib::Window& win)
 
 void Counter::set_value(int val)
 {
+	if (val>999) val=999;
 	value  = val;
 	ostringstream os;
 	os<<val;

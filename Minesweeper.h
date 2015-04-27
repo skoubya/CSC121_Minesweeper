@@ -135,7 +135,7 @@ struct Counter : Widget
 		void increment_value(int change) {set_value(value+change);}
 		
 	private:
-		int value;
+		int value = 0;
 };
 
 struct Game: Graph_lib::Window //make window later
@@ -160,6 +160,8 @@ struct Game: Graph_lib::Window //make window later
 		Smile* smiley;
 		Counter* mine_counter;
 		Counter* timer;
+		static void cb_change_time(Address pw);
+		void change_time();
 		bool game_started=false;
 		bool game_over = false;
 		int mine_total;
