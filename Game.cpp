@@ -44,7 +44,6 @@ void Game::place_mines(int num, int row, int col)
 			t = board[r][c];
 		} while((r==row && c==col) || t->get_mine());
 		place_mine(r, c);
-		if (debug) t->change_state(Tile::State::unclicked);
 	}
 }
 
@@ -136,6 +135,21 @@ void Game::lose_game(int row, int col) //incomplete
 void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
 {
 	place_mines(mine_total, row, col);
+	if (debug)
+	{
+		int rMax=board.size();
+		int cMax=board[0].size();
+		for (int r=0; r<rMax; r++)
+		{
+			for (int c = 0; c<cMax; c++)
+			{
+				if (board[r][c]->get_state() == Tile::State::unclicked)
+				{
+					board[r][c]->change_state(Tile::State::unclicked);
+				}
+			}
+		}
+	}
 }
 
 void Game::win_game() //incomplete (maybe separate into different functions)

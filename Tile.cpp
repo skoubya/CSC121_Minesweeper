@@ -1,11 +1,21 @@
 #include "Minesweeper.h"
 
+int MyBox::handle(int event)
+{
+	if (event==FL_PUSH || event==FL_RELEASE) 
+	{
+		do_callback();
+		clear_changed();
+		return 1;
+	}
+	return 0;
+}
+
 void Tile::change_state(State s) 
 {
 	switch(s)
 	{
-		case State::unclicked: if (get_mine() && debug) changeImage(TileImg::imgBomb);
-							   else changeImage(TileImg::imgUnclicked);
+		case State::unclicked: changeImage(*unclicked_img);
 							   break;
 		case State::clicked: changeImage(*clicked_img);
 							 break;
@@ -31,6 +41,12 @@ void Tile::put_mine(bool put)
 	mine= put;
 	if(mine) clicked_img=&TileImg::imgRedBomb;
 	else clicked_img=&TileImg::imgBlank;
+	
+	if (debug)
+	{
+		if (mine) unclicked_img = &TileImg::imgBombDebug;
+		else unclicked_img = &TileImg::imgUnclicked;
+	}
 }
 
 void Tile::add_adj_mines()
@@ -46,20 +62,28 @@ void Tile::set_adj_mines(int numMines)
 		case 0: clicked_img = &TileImg::imgBlank;
 				break;
 		case 1: clicked_img = &TileImg::img1;
+				if(debug) unclicked_img = &TileImg::img1Debug;
 				break;
 		case 2: clicked_img = &TileImg::img2;
+				if(debug) unclicked_img = &TileImg::img2Debug;
 				break;
 		case 3: clicked_img = &TileImg::img3;
+				if(debug) unclicked_img = &TileImg::img3Debug;
 				break;
 		case 4: clicked_img = &TileImg::img4;
+				if(debug) unclicked_img = &TileImg::img4Debug;
 				break;
 		case 5: clicked_img = &TileImg::img5;
+				if(debug) unclicked_img = &TileImg::img5Debug;
 				break;
 		case 6: clicked_img = &TileImg::img6;
+				if(debug) unclicked_img = &TileImg::img6Debug;
 				break;
 		case 7: clicked_img = &TileImg::img7;
+				if(debug) unclicked_img = &TileImg::img7Debug;
 				break;
 		case 8: clicked_img = &TileImg::img8;
+				if(debug) unclicked_img = &TileImg::img8Debug;
 				break;
 	}
 }
@@ -97,6 +121,12 @@ void Smile::attach(Graph_lib::Window& win)
     own = &win;
 	pw->align(FL_ALIGN_IMAGE_BACKDROP);
 	change_image(TileImg::imgSmile);
+}
+
+CountBox::~CountBox()
+{
+	delete r;
+	delete t;
 }
 
 void CountBox::draw()

@@ -15,7 +15,7 @@
 
 //debug mode?
 #ifndef debug
-#define debug false
+#define debug true
 #endif
 
 #ifndef TileImg
@@ -43,6 +43,15 @@ namespace TileImg
 	Fl_PNG_Image imgDead{string("Small_Squares/Dead.png").c_str()};
 	Fl_PNG_Image imgCool{string("Small_Squares/Cool.png").c_str()};
 	Fl_PNG_Image imgScared{string("Small_Squares/Scared.png").c_str()};
+	Fl_PNG_Image img1Debug{string("Small_Squares/1Debug.png").c_str()};
+	Fl_PNG_Image img2Debug{string("Small_Squares/2Debug.png").c_str()};
+	Fl_PNG_Image img3Debug{string("Small_Squares/3Debug.png").c_str()};
+	Fl_PNG_Image img4Debug{string("Small_Squares/4Debug.png").c_str()};
+	Fl_PNG_Image img5Debug{string("Small_Squares/5Debug.png").c_str()};
+	Fl_PNG_Image img6Debug{string("Small_Squares/6Debug.png").c_str()};
+	Fl_PNG_Image img7Debug{string("Small_Squares/7Debug.png").c_str()};
+	Fl_PNG_Image img8Debug{string("Small_Squares/8Debug.png").c_str()};
+	Fl_PNG_Image imgBombDebug{string("Small_Squares/BombDebug.png").c_str()};
 }
 
 #endif
@@ -82,6 +91,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		bool mine;
 		int adj_mines;  
 		State current_state;
+		Fl_PNG_Image* unclicked_img = &TileImg::imgUnclicked;
 		Fl_PNG_Image* clicked_img;  
 		
 		void changeImage(Fl_PNG_Image& im); //possible public
@@ -101,7 +111,7 @@ struct Smile:Widget
 		
 };
 
-struct CountBox : Fl_Widget //make destructor (check other classes too)
+struct CountBox : Fl_Widget
 {
 	public:
 		CountBox(int x, int y, int w, int h, const char * 	l = 0)
@@ -114,6 +124,7 @@ struct CountBox : Fl_Widget //make destructor (check other classes too)
 			r->set_color(Color{Color::Color_type::black});
 			r->set_fill_color(Color{Color::Color_type::black});
 		}
+		~CountBox();
 		void draw();
 		void change_text(string s) {t->set_label(s);}
 		void move(int nx, int ny);
