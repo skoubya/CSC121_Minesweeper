@@ -12,6 +12,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Timer.H>
+#include "FL/Fl_Menu_.H"
 
 //debug mode?
 #ifndef debug
@@ -149,6 +150,29 @@ struct Counter : Widget
 		int value = 0;
 };
 
+struct Bar : Fl_Menu_Bar
+{
+public:
+	Bar(int x, int y, int w, int h)
+	:Fl_Menu_Bar(x,y,w,h)
+	{
+
+	}
+	//virtual int handle(int event);
+	//virtual int add (const char *);
+};
+
+struct Option : Widget
+{
+public:
+	Option(Point xy, int w, int h, Callback cb)
+	:Widget(xy, w, h, "", cb)
+	{
+
+	}
+	void attach(Graph_lib::Window& win);
+};
+
 struct Game: Graph_lib::Window //make window later
 {
 	public:
@@ -173,6 +197,7 @@ struct Game: Graph_lib::Window //make window later
 		Smile* smiley;
 		Counter* mine_counter;
 		Counter* timer;
+		Option* menuBar;
 		static void cb_change_time(Address pw);
 		void change_time();
 		bool game_started=false;

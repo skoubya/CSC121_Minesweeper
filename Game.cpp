@@ -10,6 +10,8 @@ Game::Game (Point xy, const string& title)
 	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
 	create_board(10,10,9);
+	menuBar = new Option(Point{0,0},500,25, cb_restart_click); //will change cb later
+	attach(*menuBar);
 	
 	Fl::add_timeout(1.0, cb_change_time, this);
 	Fl::run();
@@ -343,4 +345,12 @@ void Game::change_time()
 		timer->increment_value(1);
 		damage(FL_DAMAGE_CHILD);
 	}
+}
+
+void Option::attach(Graph_lib::Window& win)
+{
+	mn = new Bar(loc.x,loc.y,width,height);
+	mn->add("Level");
+	mn->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
+    own = &win;
 }
