@@ -225,11 +225,13 @@ void Game::click (int row, int col)
 	int which= Fl::event_button();
 	switch (which)
 	{
-		case FL_LEFT_MOUSE: left_click(row, col);
+		case FL_LEFT_MOUSE: if (Fl::event_buttons()==FL_BUTTON3) middle_click(row, col);
+							else left_click(row, col);
 							break;
 		case FL_MIDDLE_MOUSE: middle_click(row, col);
 							  break;
-		case FL_RIGHT_MOUSE: right_click(row, col);
+		case FL_RIGHT_MOUSE: if (Fl::event_buttons()==FL_BUTTON1) middle_click(row, col);
+							 else right_click(row, col);
 							 break;
 	}
 }
@@ -280,17 +282,30 @@ void Game::left_click(int row, int col)
 	if (uncovered == (maxRow*maxCol - mine_total)) win_game();
 }
 
-void Game::middle_click(int row, int col)
+void Game::middle_click(int row, int col) //maybe inefficient
 {
+	if (board[row][col]->get_state() != Tile::State::clicked) return;  //do nothing
 	int maxRow = board.size();
 	int maxCol = board[0].size();
 	int bottom= min((row+2),maxRow);
 	int right = min((col+2),maxCol);
+	int flags = 0;
 	for (int r=max(row-1,0); r<bottom; r++)
 	{
 		for (int c=max(col-1,0); c<right; c++)
 		{
-			left_click(r,c);
+			if (board[r][c]->get_state() == Tile::State::flag) flags++;
+		}
+	}
+	
+	if (flags == board[row][col]->get_adj_mines())
+	{
+		for (int r=max(row-1,0); r<bottom; r++)
+		{
+			for (int c=max(col-1,0); c<right; c++)
+			{
+				left_click(r,c);
+			}
 		}
 	}
 }
