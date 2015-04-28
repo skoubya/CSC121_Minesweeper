@@ -11,7 +11,7 @@ Game::Game (Point xy, const string& title)
 	attach(*smiley);
 	create_board(10,10,9);
 	
-	create_board(16, 30, 99);
+	Fl::add_timeout(1.0, cb_change_time, this);
 	Fl::run();
 }
 
@@ -165,6 +165,7 @@ void Game::restart_game()
 	else
 	{
 		mine_counter->set_value(mine_total);
+		timer->set_value(0);
 		damage(FL_DAMAGE_CHILD);
 		int rMax=board.size();
 		int cMax=board[0].size();
@@ -297,5 +298,20 @@ void Game::right_click(int row, int col)
 								break;
 		case Tile::State::question: t->change_state(Tile::State::unclicked);
 									break;
+	}
+}
+
+void Game::cb_change_time(Address pw)
+{
+	reference_to<Game>(pw).change_time();
+	Fl::repeat_timeout(1.0, cb_change_time, pw);
+}
+
+void Game::change_time()
+{
+	if (game_started && !game_over)
+	{
+		timer->increment_value(1);
+		damage(FL_DAMAGE_CHILD);
 	}
 }

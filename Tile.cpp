@@ -123,6 +123,8 @@ void Counter::attach(Graph_lib::Window& win)
 
 void Counter::set_value(int val)
 {
+	if (val>999) val=999;  //keep 3 digits
+	else if (val< -99) val=-99;
 	value  = val;
 	ostringstream os;
 	os<<val;

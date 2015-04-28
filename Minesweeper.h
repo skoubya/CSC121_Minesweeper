@@ -101,7 +101,7 @@ struct Smile:Widget
 		
 };
 
-struct CountBox : Fl_Widget
+struct CountBox : Fl_Widget //make destructor (check other classes too)
 {
 	public:
 		CountBox(int x, int y, int w, int h, const char * 	l = 0)
@@ -135,7 +135,7 @@ struct Counter : Widget
 		void increment_value(int change) {set_value(value+change);}
 		
 	private:
-		int value;
+		int value = 0;
 };
 
 struct Game: Graph_lib::Window //make window later
@@ -145,6 +145,8 @@ struct Game: Graph_lib::Window //make window later
 	
 		Game(Point xy, const string& title );
 		~Game();
+		
+		//possibly all can be private
 		void place_mines (int num, int row, int col); //pass start click & make private later
 		void place_mine (int row, int col);  //make private later
 		void show_mines(int row, int col);  // which one to skip
@@ -160,6 +162,8 @@ struct Game: Graph_lib::Window //make window later
 		Smile* smiley;
 		Counter* mine_counter;
 		Counter* timer;
+		static void cb_change_time(Address pw);
+		void change_time();
 		bool game_started=false;
 		bool game_over = false;
 		int mine_total;
