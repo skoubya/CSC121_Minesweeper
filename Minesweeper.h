@@ -12,7 +12,8 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Timer.H>
-#include "FL/Fl_Menu_.H"
+#include "Fl_Menu_Bar.H"
+#include "Fl_Menu_.H"
 
 //debug mode?
 #ifndef debug
