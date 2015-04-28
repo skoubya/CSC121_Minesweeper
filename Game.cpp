@@ -3,14 +3,14 @@
 Game::Game (Point xy, const string& title)
 	:Graph_lib::Window{xy, 0,0, title}
 {
-	mine_counter = new Counter{Point{0,5}, 50, y_offset-10, [](Address, Address){}}; //doesn't move
+	mine_counter = new Counter{Point{0,5 + bar_height},[](Address, Address){}}; //doesn't move
 	attach(*mine_counter);
-	timer = new Counter(Point{0, 0}, 50, y_offset-10, [](Address, Address){}); 
+	timer = new Counter(Point{0, 0},[](Address, Address){}); 
 	attach(*timer);
 	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
 	create_board(10,10,9);
-	menuBar = new Option(Point{0,0},500,25, cb_restart_click); //will change cb later
+	menuBar = new Option(Point{0,0}, 500, bar_height, cb_restart_click); //will change cb later
 	attach(*menuBar);
 	
 	Fl::add_timeout(1.0, cb_change_time, this);
@@ -110,9 +110,11 @@ void Game::create_board(int rows, int cols, int mines)
 	
 	mine_counter->set_value(mines);
 	
-	smiley->move(Point{(x_max()-26)/2, (y_offset-26)/2});
+	smiley->move(Point{(x_max()-smile_side)/2, (y_offset-smile_side+ bar_height)/2 });
 	
-	timer->move(Point{x_max()-50, 5});
+	timer->move(Point{x_max()-(timer->width), 5 + bar_height});
+	
+	
 	
 	for (int r=0; r<rows; r++)
 	{

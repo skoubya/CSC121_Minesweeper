@@ -17,7 +17,7 @@
 
 //debug mode?
 #ifndef debug
-#define debug true
+#define debug false
 #endif
 
 #ifndef TileImg
@@ -138,8 +138,8 @@ struct CountBox : Fl_Widget
 struct Counter : Widget
 {
 		public:
-		Counter(Point xy, int w, int h, Callback cb)
-			:Widget(xy, w, h, "", cb)
+		Counter(Point xy, Callback cb)
+			:Widget(xy, 50, 30, "", cb) //predetermined height and width
 		{
 		}
 		void attach(Graph_lib::Window& win);
@@ -177,7 +177,9 @@ public:
 struct Game: Graph_lib::Window //make window later
 {
 	public:
-		static constexpr int y_offset = 40;
+		static constexpr int y_offset = 65;
+		static constexpr int smile_side = 26;
+		static constexpr int bar_height = 25;
 	
 		Game(Point xy, const string& title );
 		~Game();
