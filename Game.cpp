@@ -9,9 +9,10 @@ Game::Game (Point xy, const string& title)
 	attach(*timer);
 	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
-	create_board(10,10,9);
-	menuBar = new Option(Point{0,0}, 500, bar_height, cb_restart_click); //will change cb later
+	menuBar = new Option(Point{0,0}, 0, bar_height, cb_restart_click); //will change cb later
 	attach(*menuBar);
+	
+	create_board(10,10,9);
 	
 	Fl::add_timeout(1.0, cb_change_time, this);
 	Fl::run();
@@ -114,7 +115,7 @@ void Game::create_board(int rows, int cols, int mines)
 	
 	timer->move(Point{x_max()-(timer->width), 5 + bar_height});
 	
-	
+	menuBar->change_size(x_max(), bar_height);
 	
 	for (int r=0; r<rows; r++)
 	{
@@ -351,8 +352,8 @@ void Game::change_time()
 
 void Option::attach(Graph_lib::Window& win)
 {
-	mn = new Bar(loc.x,loc.y,width,height);
-	mn->add("Level");
-	mn->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
+	pw = new Bar(loc.x,loc.y,width,height);
+	static_cast<Bar*>(pw) ->add("Level");
+	pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
     own = &win;
 }

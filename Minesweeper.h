@@ -172,6 +172,11 @@ public:
 
 	}
 	void attach(Graph_lib::Window& win);
+	void change_size (int w, int h) 
+	{
+		if (pw == nullptr) cout<<"pw is null \n";
+		pw->resize(loc.x,loc.y,w,h);
+	}
 };
 
 struct Game: Graph_lib::Window //make window later
