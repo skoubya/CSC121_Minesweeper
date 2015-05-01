@@ -15,8 +15,8 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Text_Buffer.H>
-#include "Fl_Menu_Bar.H"
-#include "Fl_Menu_.H"
+#include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Menu_.H>
 
 //debug mode?
 #ifndef Debug
@@ -92,6 +92,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		void set_adj_mines(int numMines); 
 		int get_adj_mines() const {return adj_mines;}
 		void loss();
+		void clear_damage() {pw->clear_damage();}
 
 	private:
 		bool mine;
@@ -100,7 +101,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		Fl_PNG_Image* unclicked_img = &TileImg::imgUnclicked;
 		Fl_PNG_Image* clicked_img = nullptr;  
 		
-		void changeImage(Fl_PNG_Image& im); //possible public
+		void changeImage(Fl_PNG_Image& im);
 };
 
 struct Smile:Widget
@@ -153,17 +154,6 @@ struct Counter : Widget
 		
 	private:
 		int value = 0;
-};
-
-struct Bar : Fl_Menu_Bar
-{
-	public:
-		Bar(int x, int y, int w, int h)
-		:Fl_Menu_Bar(x,y,w,h)
-		{
-
-		}
-
 };
 
 struct Option : Widget
@@ -246,7 +236,6 @@ struct Game: Graph_lib::Window //make window later
 		
 		static void cb_tile_click (Address, Address);
 		static void cb_restart_click (Address, Address);
-		static void cb_set_level(Address, Address);
 
 		void place_mines (int num, int row, int col); //pass start click & make private later
 		void place_mine (int row, int col);

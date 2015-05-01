@@ -9,7 +9,7 @@ Game::Game (Point xy, const string& title)
 	attach(*timer);
 	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
-	menuBar = new Option(Point{0,0}, 0, bar_height, [](Address, Address){}); //will change cb later
+	menuBar = new Option(Point{0,0}, 0, bar_height, [](Address, Address pw){}); 
 	attach(*menuBar);
 	
 	create_board(9,9,10);
@@ -105,23 +105,27 @@ void Game::clear_board()
 	game_started = false;
 	game_over = false;
 	uncovered = 0;
+	if (debug) cout<<"Deleting... \n";
 	while (board.size()>0)
 	{
 		int lastR = board.size()-1;
 		while (board[lastR].size()>0)
 		{
 			int lastC = board[lastR].size()-1;
+			if (debug) cout<<'\t'<<lastR<<':'<<lastC<<endl;
 			detach(*board[lastR][lastC]);
 			delete board[lastR][lastC];
 			board[lastR].pop_back();
 		}
 		board.pop_back();
 	}
+	if (debug) cout<<"Done \n";
 }
 
 void Game::create_board(int rows, int cols, int mines)
 {
 	clear_board();
+	resize(0,0); //forces redraw of tiles
 	resize(cols*Tile::tileSide, rows*Tile::tileSide + y_offset);
 	resizable(NULL);
 	size_range(x_max(),y_max(),x_max(),y_max());
@@ -147,6 +151,7 @@ void Game::create_board(int rows, int cols, int mines)
 		
 	}
 	mine_total=mines;
+	clear_damage(); //prevents repeat 
 }
 
 void Game::lose_game(int row, int col) //incomplete
@@ -237,11 +242,6 @@ void Game::cb_tile_click (Address pt, Address pw )
 void Game::cb_restart_click (Address, Address pw)
 {
 	reference_to<Game>(pw).restart_game();
-}
-
-void Game::cb_set_level (Address, Address pw)
-{
-	reference_to<Game>(pw).create_board(9, 9, 10);
 }
 
 void Game::click (int row, int col) 
@@ -406,12 +406,12 @@ void Game::toggle_debug(Fl_Widget* p)
 	if (debug)
 	{
 		debug = false;
-		reference_to<Bar>(p).replace(7, "Toggle debug on");
+		reference_to<Fl_Menu_Bar>(p).replace(7, "Toggle debug on");
 	}
 	else
 	{
 		debug = true;
-		reference_to<Bar>(p).replace(7, "Toggle debug off");
+		reference_to<Fl_Menu_Bar>(p).replace(7, "Toggle debug off");
 	}
 	
 	//refreshed images

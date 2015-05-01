@@ -109,13 +109,13 @@ void Tile::loss()
 void Tile::changeImage(Fl_PNG_Image& im)
 {
 	pw->image(im);
-	pw->redraw(); //maybe get rid of later
+	pw->redraw(); 
 }
 
 void Smile::change_image(Fl_PNG_Image& im)
 {
 	pw->image(im);
-	pw->redraw(); //maybe get rid of later
+	pw->redraw(); 
 }
 
 void Smile::attach(Graph_lib::Window& win)
@@ -137,12 +137,13 @@ void CountBox::draw()
 {	
 	r->draw();
 	t->draw();
+	clear_damage();
 }
 
 void CountBox::move(int nx, int ny)
 {
 	Point p =r->point(0);
-	t->move(nx-p.x,ny-p.y); //maybe inefficent
+	t->move(nx-p.x,ny-p.y); 
 	r->move(nx-p.x,ny-p.y);
 	Fl_Widget::position(nx,ny);
 	redraw();
@@ -174,13 +175,13 @@ void Counter::set_value(int val)
 
 void Option::attach(Graph_lib::Window& win)
 {
-	pw = new Bar(loc.x,loc.y,width,height);
-	static_cast<Bar*>(pw) ->add("Options/Select Level/Beginner", 0, Game::cb_beginner, &win);
-	static_cast<Bar*>(pw) ->add("Options/Select Level/Intermediate", 0, Game::cb_intermediate, &win);
-	static_cast<Bar*>(pw) ->add("Options/Select Level/Expert", 0, Game::cb_expert, &win);
-	static_cast<Bar*>(pw) ->add("Options/Select Level/Custom...", 0, Game::cb_place_win, &win);
-	static_cast<Bar*>(pw) ->add("Help", 0, Game::cb_help, &win); //change callback
-	static_cast<Bar*>(pw) ->add("Options/Toggle debug on", 0, Game::cb_debug, &win); //change callback
+	pw = new Fl_Menu_Bar(loc.x,loc.y,width,height);
+	static_cast<Fl_Menu_Bar*>(pw) ->add("Options/Select Level/Beginner", 0, Game::cb_beginner, &win);
+	static_cast<Fl_Menu_Bar*>(pw) ->add("Options/Select Level/Intermediate", 0, Game::cb_intermediate, &win);
+	static_cast<Fl_Menu_Bar*>(pw) ->add("Options/Select Level/Expert", 0, Game::cb_expert, &win);
+	static_cast<Fl_Menu_Bar*>(pw) ->add("Options/Select Level/Custom...", 0, Game::cb_place_win, &win);
+	static_cast<Fl_Menu_Bar*>(pw) ->add("Help", 0, Game::cb_help, &win); //change callback
+	static_cast<Fl_Menu_Bar*>(pw) ->add("Options/Toggle debug on", 0, Game::cb_debug, &win); //change callback
 	pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
 
     own = &win;
