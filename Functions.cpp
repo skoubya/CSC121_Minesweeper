@@ -38,11 +38,11 @@ void Tile::attach(Graph_lib::Window& win)
 
 void Tile::put_mine(bool put)
 {
-	cout<<"In Functions: "<<visual<<endl;
+	if (debug) cout<<"In Functions: "<<debug<<endl;
 	mine= put;
 	if(mine) clicked_img=&TileImg::imgRedBomb;
 	else clicked_img=&TileImg::imgBlank;
-	if (visual)
+	if (debug)
 	{
 		if (mine) unclicked_img = &TileImg::imgBombDebug;
 		else unclicked_img = &TileImg::imgUnclicked;
@@ -57,39 +57,39 @@ void Tile::add_adj_mines()
 void Tile::set_adj_mines(int numMines)
 {
 	adj_mines=numMines;
-	cout<<"Add adjacent mines: "<<visual<<": "<<unclicked_img<<'-';
+	if (debug) cout<<"Add adjacent mines: "<<debug<<": "<<unclicked_img<<'-';
 	switch (adj_mines)
 	{
 		case 0: clicked_img = &TileImg::imgBlank;
 				unclicked_img= &TileImg::imgUnclicked;
 				break;
 		case 1: clicked_img = &TileImg::img1;
-				if(visual) unclicked_img = &TileImg::img1Debug;
+				if(debug) unclicked_img = &TileImg::img1Debug;
 				break;
 		case 2: clicked_img = &TileImg::img2;
-				if(visual) unclicked_img = &TileImg::img2Debug;
+				if(debug) unclicked_img = &TileImg::img2Debug;
 				break;
 		case 3: clicked_img = &TileImg::img3;
-				if(visual) unclicked_img = &TileImg::img3Debug;
+				if(debug) unclicked_img = &TileImg::img3Debug;
 				break;
 		case 4: clicked_img = &TileImg::img4;
-				if(visual) unclicked_img = &TileImg::img4Debug;
+				if(debug) unclicked_img = &TileImg::img4Debug;
 				break;
 		case 5: clicked_img = &TileImg::img5;
-				if(visual) unclicked_img = &TileImg::img5Debug;
+				if(debug) unclicked_img = &TileImg::img5Debug;
 				break;
 		case 6: clicked_img = &TileImg::img6;
-				if(visual) unclicked_img = &TileImg::img6Debug;
+				if(debug) unclicked_img = &TileImg::img6Debug;
 				break;
 		case 7: clicked_img = &TileImg::img7;
-				if(visual) unclicked_img = &TileImg::img7Debug;
+				if(debug) unclicked_img = &TileImg::img7Debug;
 				break;
 		case 8: clicked_img = &TileImg::img8;
-				if(visual) unclicked_img = &TileImg::img8Debug;
+				if(debug) unclicked_img = &TileImg::img8Debug;
 				break;
 	}
-	if (!visual) unclicked_img= &TileImg::imgUnclicked;
-	cout<<unclicked_img<<endl;
+	if (!debug) unclicked_img= &TileImg::imgUnclicked;
+	if (debug) cout<<unclicked_img<<endl;
 }
 
 void Tile::loss()
@@ -202,13 +202,13 @@ LevelWindow::LevelWindow (Point xy, int w, int h, const char* st, Game* gm)
 LevelWindow::~LevelWindow()
 {
 	if (rowIn != nullptr) delete rowIn;
-	cout<<"after rowIn delete \n";
+	if (debug) cout<<"after rowIn delete \n";
 	if (colIn != nullptr) delete colIn;
-	cout<<"after colIn delete \n";
+	if (debug) cout<<"after colIn delete \n";
 	if (mineIn != nullptr) delete mineIn;
-	cout<<"after mineIn delete \n";
+	if (debug) cout<<"after mineIn delete \n";
 	if (sub != nullptr) delete sub;
-	cout<<"after sub delete \n";
+	if (debug) cout<<"after sub delete \n";
 }
 
 HelpWindow::HelpWindow (Point xy, int w, int h, const char* st)
@@ -226,7 +226,7 @@ HelpWindow::HelpWindow (Point xy, int w, int h, const char* st)
 HelpWindow::~HelpWindow()
 {
 	if (helpTextD != nullptr) delete helpTextD;
-	cout<<"after helpTextD delete \n";
+	if (debug) cout<<"after helpTextD delete \n";
 	if (helpTextB != nullptr) delete helpTextB;
-	cout<<"after helpTextB delete \n";
+	if (debug) cout<<"after helpTextB delete \n";
 }

@@ -21,7 +21,7 @@
 //debug mode?
 #ifndef Debug
 #define Debug
-extern bool visual;
+extern bool debug;
 #endif
 
 #ifndef TileImg
@@ -89,7 +89,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		void put_mine(bool put);
 		bool get_mine() const {return mine;}
 		void add_adj_mines();
-		void set_adj_mines(int numMines); //maybe make private
+		void set_adj_mines(int numMines); 
 		int get_adj_mines() const {return adj_mines;}
 		void loss();
 

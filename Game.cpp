@@ -20,29 +20,29 @@ Game::Game (Point xy, const string& title)
 
 Game::~Game()
 {
-	cout<<"Game destructor \n";
+	if (debug) cout<<"Game destructor \n";
 	int rows=board.size();
 	int cols=board[0].size();
 	for (int r=0; r<rows; r++)
 	{
 		for (int c=0; c<cols; c++)
 		{
-			cout<<"still good: "<<r<<'-'<<c<<endl;
+			if (debug) cout<<"still good: "<<r<<'-'<<c<<endl;
 			delete board[r][c];
 		}
 	}
 	delete smiley; //maybe not needed
-	cout<<"after smiley delete \n";
+	if (debug) cout<<"after smiley delete \n";
 	delete mine_counter;
-	cout<<"after mine_counter delete \n";
+	if (debug) cout<<"after mine_counter delete \n";
 	delete timer;
-	cout<<"after timer delete \n";
+	if (debug) cout<<"after timer delete \n";
 	delete menuBar;
-	cout<<"after menu_bar delete \n";
+	if (debug) cout<<"after menu_bar delete \n";
 	if (wind != nullptr) delete wind;
-	cout<<"after wind delete \n";
+	if (debug) cout<<"after wind delete \n";
 	if (helpWin != nullptr) delete helpWin;
-	cout<<"after helpWin delete \n";
+	if (debug) cout<<"after helpWin delete \n";
 }
 
 void Game::place_mines(int num, int row, int col)
@@ -65,7 +65,7 @@ void Game::place_mines(int num, int row, int col)
 
 void Game::place_mine (int row, int col)
 {
-	cout<<"In Game: "<<visual<<endl;
+	if (debug) cout<<"In Game: "<<debug<<endl;
 	board[row][col]->put_mine(true);
 	int maxRow = board.size();
 	int maxCol = board[0].size();
@@ -403,15 +403,15 @@ void Game::cb_debug(Fl_Widget* p, Address pw)
 
 void Game::toggle_debug(Fl_Widget* p)
 {
-	if (visual)
+	if (debug)
 	{
-		visual = false;
-		const_cast<Fl_Menu_Item*>(reference_to<Bar>(p).find_item("Options/Toggle debug off"))->label("Toggle debug on");
+		debug = false;
+		reference_to<Bar>(p).replace(7, "Toggle debug on");
 	}
 	else
 	{
-		visual = true;
-		const_cast<Fl_Menu_Item*>(reference_to<Bar>(p).find_item("Options/Toggle debug on"))->label("Toggle debug off");
+		debug = true;
+		reference_to<Bar>(p).replace(7, "Toggle debug off");
 	}
 	
 	//refreshed images

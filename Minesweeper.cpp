@@ -1,6 +1,6 @@
 #include "Minesweeper.h"
 
-bool visual = false;
+bool debug = false;
 
 int main()
 {
