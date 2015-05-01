@@ -12,12 +12,16 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Timer.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Text_Buffer.H>
 #include "Fl_Menu_Bar.H"
 #include "Fl_Menu_.H"
 
 //debug mode?
-#ifndef debug
-#define debug false
+#ifndef debugM
+#define debugM
+static bool theDebug = true; 
 #endif
 
 #ifndef TileImg
@@ -172,10 +176,33 @@ public:
 
 	}
 	void attach(Graph_lib::Window& win);
+	void change_debug();
 	void change_size (int w, int h) 
 	{
 		if (pw == nullptr) cout<<"pw is null \n";
 		pw->resize(loc.x,loc.y,w,h);
+	}
+};
+
+struct Game; //forward declaration
+
+struct LevelWindow : Graph_lib::Window
+{
+public:
+	LevelWindow(Point xy, int w, int h, const char* st, Game* gm)
+	:Window(xy, w, h, st), game{gm}
+	{
+	}
+	Game* game;
+};
+
+struct LevelWin : Widget
+{
+public:
+	LevelWin(Point xy, int w, int h, Callback cb)
+	:Widget(xy, w, h, "", cb)
+	{
+
 	}
 };
 
@@ -199,6 +226,13 @@ struct Game: Graph_lib::Window //make window later
 		void start_game(int row, int col);  //which one clicked to start
 		void win_game();
 		void restart_game();
+		void set_level(int row, int col, int mines);
+		static void cb_place_win(Fl_Widget*, Address);
+		static void cb_beginner(Fl_Widget*, Address);
+		static void cb_intermediate(Fl_Widget*, Address);
+		static void cb_expert(Fl_Widget*, Address);
+		static void cb_debug(Fl_Widget*, Address);
+		static void cb_help(Fl_Widget*, Address);
 
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
@@ -206,6 +240,17 @@ struct Game: Graph_lib::Window //make window later
 		Counter* mine_counter;
 		Counter* timer;
 		Option* menuBar;
+		LevelWindow* wind=nullptr;
+		LevelWindow* helpWin = nullptr;
+		In_box* rowIn;
+		In_box* colIn;
+		In_box* mineIn;
+		Button* sub;
+		Fl_Text_Display* helpTextD;
+		Fl_Text_Buffer* helpTextB;
+		void placeWin(int x, int y, int w, int h, const char* st);
+		void dispHelp();
+
 		static void cb_change_time(Address pw);
 		void change_time();
 		bool game_started=false;
@@ -215,11 +260,16 @@ struct Game: Graph_lib::Window //make window later
 		
 		static void cb_tile_click (Address, Address);
 		static void cb_restart_click (Address, Address);
+		static void cb_set_level(Address, Address);
+		static void cb_custom(Address, Address);
+
+		void custom();
 		//setting mines should increment mine count of those around
 		void click (int row, int col);
 		void show_scared();
 		void left_click(int row, int col);
 		void middle_click(int row, int col);
 		void right_click(int row, int col);
+		void toggle_debug(Fl_Widget* p);
 };
 #endif

@@ -51,7 +51,6 @@ namespace Graph_lib {
     protected:
         Window* own;    // every Widget belongs to a Window
         Fl_Widget* pw;  // connection to the FLTK Widget
-        Fl_Menu_* mn;  //changed by NICK
     private:
         Widget& operator=(const Widget&); // don't copy Widgets
         Widget(const Widget&);

@@ -41,8 +41,7 @@ void Tile::put_mine(bool put)
 	mine= put;
 	if(mine) clicked_img=&TileImg::imgRedBomb;
 	else clicked_img=&TileImg::imgBlank;
-	
-	if (debug)
+	if (theDebug)
 	{
 		if (mine) unclicked_img = &TileImg::imgBombDebug;
 		else unclicked_img = &TileImg::imgUnclicked;
@@ -62,28 +61,28 @@ void Tile::set_adj_mines(int numMines)
 		case 0: clicked_img = &TileImg::imgBlank;
 				break;
 		case 1: clicked_img = &TileImg::img1;
-				if(debug) unclicked_img = &TileImg::img1Debug;
+				if(theDebug) unclicked_img = &TileImg::img1Debug;
 				break;
 		case 2: clicked_img = &TileImg::img2;
-				if(debug) unclicked_img = &TileImg::img2Debug;
+				if(theDebug) unclicked_img = &TileImg::img2Debug;
 				break;
 		case 3: clicked_img = &TileImg::img3;
-				if(debug) unclicked_img = &TileImg::img3Debug;
+				if(theDebug) unclicked_img = &TileImg::img3Debug;
 				break;
 		case 4: clicked_img = &TileImg::img4;
-				if(debug) unclicked_img = &TileImg::img4Debug;
+				if(theDebug) unclicked_img = &TileImg::img4Debug;
 				break;
 		case 5: clicked_img = &TileImg::img5;
-				if(debug) unclicked_img = &TileImg::img5Debug;
+				if(theDebug) unclicked_img = &TileImg::img5Debug;
 				break;
 		case 6: clicked_img = &TileImg::img6;
-				if(debug) unclicked_img = &TileImg::img6Debug;
+				if(theDebug) unclicked_img = &TileImg::img6Debug;
 				break;
 		case 7: clicked_img = &TileImg::img7;
-				if(debug) unclicked_img = &TileImg::img7Debug;
+				if(theDebug) unclicked_img = &TileImg::img7Debug;
 				break;
 		case 8: clicked_img = &TileImg::img8;
-				if(debug) unclicked_img = &TileImg::img8Debug;
+				if(theDebug) unclicked_img = &TileImg::img8Debug;
 				break;
 	}
 }
@@ -166,4 +165,18 @@ void Counter::set_value(int val)
 	}
 	static_cast<CountBox*>(pw)->change_text(s);
 	pw->redraw();
+}
+
+void Option::attach(Graph_lib::Window& win)
+{
+	pw = new Bar(loc.x,loc.y,width,height);
+	static_cast<Bar*>(pw) ->add("Options/Select Level/Beginner", 0, Game::cb_beginner, &win);
+	static_cast<Bar*>(pw) ->add("Options/Select Level/Intermediate", 0, Game::cb_intermediate, &win);
+	static_cast<Bar*>(pw) ->add("Options/Select Level/Expert", 0, Game::cb_expert, &win);
+	static_cast<Bar*>(pw) ->add("Options/Select Level/Custom...", 0, Game::cb_place_win, &win);
+	static_cast<Bar*>(pw) ->add("Help", 0, Game::cb_help, &win); //change callback
+	static_cast<Bar*>(pw) ->add("Options/Toggle debug off", 0, Game::cb_debug, &win); //change callback
+	pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
+
+    own = &win;
 }

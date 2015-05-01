@@ -9,10 +9,10 @@ Game::Game (Point xy, const string& title)
 	attach(*timer);
 	smiley = new Smile(Point{0, 0}, cb_restart_click);
 	attach(*smiley);
-	menuBar = new Option(Point{0,0}, 0, bar_height, cb_restart_click); //will change cb later
+	menuBar = new Option(Point{0,0}, 0, bar_height, [](Address, Address){}); //will change cb later
 	attach(*menuBar);
 	
-	create_board(10,10,9);
+	create_board(9,9,10);
 	
 	Fl::add_timeout(1.0, cb_change_time, this);
 	Fl::run();
@@ -70,7 +70,7 @@ void Game::place_mine (int row, int col)
 	}
 }
 
-void Game::show_mines(int row, int col) //maybe change way work (not great for debug)
+void Game::show_mines(int row, int col) 
 {
 	int rMax=board.size();
 	int cMax=board[0].size();
@@ -104,6 +104,8 @@ void Game::clear_board()
 
 void Game::create_board(int rows, int cols, int mines)
 {
+	game_started = false;
+	game_over = false;
 	clear_board();
 	resize(cols*Tile::tileSide, rows*Tile::tileSide + y_offset);
 	resizable(NULL);
@@ -112,8 +114,10 @@ void Game::create_board(int rows, int cols, int mines)
 	mine_counter->set_value(mines);
 	
 	smiley->move(Point{(x_max()-smile_side)/2, (y_offset-smile_side+ bar_height)/2 });
+	smiley->change_image(TileImg::imgSmile);
 	
 	timer->move(Point{x_max()-(timer->width), 5 + bar_height});
+	timer->set_value(0);
 	
 	menuBar->change_size(x_max(), bar_height);
 	
@@ -140,7 +144,7 @@ void Game::lose_game(int row, int col) //incomplete
 void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
 {
 	place_mines(mine_total, row, col);
-	if (debug)
+	if (theDebug)
 	{
 		int rMax=board.size();
 		int cMax=board[0].size();
@@ -159,8 +163,8 @@ void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
 
 void Game::win_game() //incomplete (maybe separate into different functions)
 {
-	int rMax=board.size();
-	int cMax=board[0].size();
+	int rMax = board.size();
+	int cMax = board[0].size();
 	for (int r=0; r<rMax; r++)
 	{
 		for (int c = 0; c<cMax; c++)
@@ -186,9 +190,9 @@ void Game::restart_game()
 		mine_counter->set_value(mine_total);
 		timer->set_value(0);
 		damage(FL_DAMAGE_CHILD);
-		int rMax=board.size();
-		int cMax=board[0].size();
-		for (int r=0; r<rMax; r++)
+		int rMax = board.size();
+		int cMax = board[0].size();
+		for (int r = 0; r < rMax; r++)
 		{
 			for (int c = 0; c<cMax; c++)
 			{
@@ -221,6 +225,11 @@ void Game::cb_tile_click (Address pt, Address pw )
 void Game::cb_restart_click (Address, Address pw)
 {
 	reference_to<Game>(pw).restart_game();
+}
+
+void Game::cb_set_level (Address, Address pw)
+{
+	reference_to<Game>(pw).create_board(9, 9, 10);
 }
 
 void Game::click (int row, int col) 
@@ -341,6 +350,11 @@ void Game::cb_change_time(Address pw)
 	Fl::repeat_timeout(1.0, cb_change_time, pw);
 }
 
+void Game::cb_place_win(Fl_Widget*, Address pw)
+{
+	reference_to<Game>(pw).placeWin(100, 200, 200, 200, "Set Custom Level");
+}
+
 void Game::change_time()
 {
 	if (game_started && !game_over)
@@ -350,10 +364,95 @@ void Game::change_time()
 	}
 }
 
-void Option::attach(Graph_lib::Window& win)
+void Game::cb_custom(Address, Address pw)
 {
-	pw = new Bar(loc.x,loc.y,width,height);
-	static_cast<Bar*>(pw) ->add("Level");
-	pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
-    own = &win;
+	reference_to<LevelWindow>(pw).game->custom();
+}
+
+void Game::cb_beginner(Fl_Widget*, Address pw)
+{
+	reference_to<Game>(pw).create_board(9,9,10);
+}
+
+void Game::cb_intermediate(Fl_Widget*, Address pw)
+{
+	reference_to<Game>(pw).create_board(16,16,40);
+}
+
+void Game::cb_expert(Fl_Widget*, Address pw)
+{
+	reference_to<Game>(pw).create_board(16,30,99);
+}
+
+void Game::cb_debug(Fl_Widget* p, Address pw)
+{
+	reference_to<Game>(pw).toggle_debug(p);
+}
+
+void Game::toggle_debug(Fl_Widget* p)
+{
+	if (theDebug)
+	{
+		theDebug = false;
+		const_cast<Fl_Menu_Item*>(reference_to<Bar>(p).find_item("Options/Toggle debug off"))->label("Toggle debug on");
+	}
+	else
+	{
+		theDebug = true;
+		const_cast<Fl_Menu_Item*>(reference_to<Bar>(p).find_item("Options/Toggle debug on"))->label("Toggle debug off");
+	}
+}
+
+void Game::cb_help(Fl_Widget* p, Address pw)
+{
+	reference_to<Game>(pw).dispHelp();
+}
+
+void Game::dispHelp()
+{
+	if (helpWin == nullptr)
+	{
+		helpWin = new LevelWindow(Point{50,50}, 300, 200, "Help", this);
+		helpTextB = new Fl_Text_Buffer();
+		helpTextB->append("Click into the minefield to expose free space. The numbers show how many bombs are adjacent to that square. Use your math skills and powers of deduction to identify where the bombs must be. Place a flag where you know a bomb to be. Right-click or use the space bar to place flags.");
+		helpWin->begin();
+		helpTextD = new Fl_Text_Display(10,10, 280, 180);
+		helpTextD->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
+		helpTextD->buffer(helpTextB);
+		helpWin->end();
+	}
+	helpWin->show();
+}
+
+void Game::custom()
+{
+	int row = rowIn->get_int();
+	int col = colIn->get_int();
+	int mine = mineIn->get_int();
+	if(row<10) row = 10;
+	else if (row>31) row = 31;
+	if (col<10) col = 10;
+	else if (col>32) col = 32;
+	if (mine<1) mine = 1;
+	else if (mine>((row-1)*(col-1))) mine=(row-1)*(col-1);
+
+	create_board(row, col, mine);
+	wind->hide();
+}
+
+void Game::placeWin(int x, int y, int w, int h, const char* st)
+{
+	if (wind == nullptr)
+	{
+		wind = new LevelWindow(Point{x,y}, w, h, st, this);
+		rowIn = new In_box(Point{70, 10}, 50, 25, "Rows:");
+		wind->attach(*rowIn);
+		colIn = new In_box(Point{70, 45}, 50, 25, "Columns:");
+		wind->attach(*colIn);
+		mineIn = new In_box(Point{70, 80}, 50, 25, "Mines:");
+		wind->attach(*mineIn);
+		sub = new Button(Point{50, 115}, 50, 25, "Submit", cb_custom);
+		wind->attach(*sub);
+	}
+	wind->show();
 }
