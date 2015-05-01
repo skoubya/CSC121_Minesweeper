@@ -1,5 +1,7 @@
 #include "Minesweeper.h"
 
+bool visual = false;
+
 int main()
 {
 	using namespace Graph_lib;

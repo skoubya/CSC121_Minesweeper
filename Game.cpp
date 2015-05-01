@@ -20,16 +20,29 @@ Game::Game (Point xy, const string& title)
 
 Game::~Game()
 {
+	cout<<"Game destructor \n";
 	int rows=board.size();
 	int cols=board[0].size();
 	for (int r=0; r<rows; r++)
 	{
 		for (int c=0; c<cols; c++)
 		{
+			cout<<"still good: "<<r<<'-'<<c<<endl;
 			delete board[r][c];
 		}
 	}
 	delete smiley; //maybe not needed
+	cout<<"after smiley delete \n";
+	delete mine_counter;
+	cout<<"after mine_counter delete \n";
+	delete timer;
+	cout<<"after timer delete \n";
+	delete menuBar;
+	cout<<"after menu_bar delete \n";
+	if (wind != nullptr) delete wind;
+	cout<<"after wind delete \n";
+	if (helpWin != nullptr) delete helpWin;
+	cout<<"after helpWin delete \n";
 }
 
 void Game::place_mines(int num, int row, int col)
@@ -52,6 +65,7 @@ void Game::place_mines(int num, int row, int col)
 
 void Game::place_mine (int row, int col)
 {
+	cout<<"In Game: "<<visual<<endl;
 	board[row][col]->put_mine(true);
 	int maxRow = board.size();
 	int maxCol = board[0].size();
@@ -88,6 +102,9 @@ void Game::show_mines(int row, int col)
 
 void Game::clear_board()
 {
+	game_started = false;
+	game_over = false;
+	uncovered = 0;
 	while (board.size()>0)
 	{
 		int lastR = board.size()-1;
@@ -104,8 +121,6 @@ void Game::clear_board()
 
 void Game::create_board(int rows, int cols, int mines)
 {
-	game_started = false;
-	game_over = false;
 	clear_board();
 	resize(cols*Tile::tileSide, rows*Tile::tileSide + y_offset);
 	resizable(NULL);
@@ -144,18 +159,15 @@ void Game::lose_game(int row, int col) //incomplete
 void Game::start_game(int row, int col) //incomplete (stuff with time & counter)
 {
 	place_mines(mine_total, row, col);
-	if (theDebug)
+	int rMax=board.size();
+	int cMax=board[0].size();
+	for (int r=0; r<rMax; r++)
 	{
-		int rMax=board.size();
-		int cMax=board[0].size();
-		for (int r=0; r<rMax; r++)
+		for (int c = 0; c<cMax; c++)
 		{
-			for (int c = 0; c<cMax; c++)
+			if (board[r][c]->get_state() == Tile::State::unclicked)
 			{
-				if (board[r][c]->get_state() == Tile::State::unclicked)
-				{
-					board[r][c]->change_state(Tile::State::unclicked);
-				}
+				board[r][c]->change_state(Tile::State::unclicked);
 			}
 		}
 	}
@@ -391,15 +403,29 @@ void Game::cb_debug(Fl_Widget* p, Address pw)
 
 void Game::toggle_debug(Fl_Widget* p)
 {
-	if (theDebug)
+	if (visual)
 	{
-		theDebug = false;
+		visual = false;
 		const_cast<Fl_Menu_Item*>(reference_to<Bar>(p).find_item("Options/Toggle debug off"))->label("Toggle debug on");
 	}
 	else
 	{
-		theDebug = true;
+		visual = true;
 		const_cast<Fl_Menu_Item*>(reference_to<Bar>(p).find_item("Options/Toggle debug on"))->label("Toggle debug off");
+	}
+	
+	//refreshed images
+	int rMax = board.size();
+	int cMax = board[0].size();
+	for (int r = 0; r < rMax; r++)
+	{
+		for (int c = 0; c<cMax; c++)
+		{
+			Tile* t= board[r][c];
+			t->set_adj_mines(t->get_adj_mines());
+			if (t->get_mine()) t->put_mine(true);
+			t->change_state(t->get_state());
+		}
 	}
 }
 
@@ -412,23 +438,16 @@ void Game::dispHelp()
 {
 	if (helpWin == nullptr)
 	{
-		helpWin = new LevelWindow(Point{50,50}, 300, 200, "Help", this);
-		helpTextB = new Fl_Text_Buffer();
-		helpTextB->append("Click into the minefield to expose free space. The numbers show how many bombs are adjacent to that square. Use your math skills and powers of deduction to identify where the bombs must be. Place a flag where you know a bomb to be. Right-click or use the space bar to place flags.");
-		helpWin->begin();
-		helpTextD = new Fl_Text_Display(10,10, 280, 180);
-		helpTextD->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
-		helpTextD->buffer(helpTextB);
-		helpWin->end();
+		helpWin = new HelpWindow(Point{50,50}, 300, 200, "Help");
 	}
 	helpWin->show();
 }
 
 void Game::custom()
 {
-	int row = rowIn->get_int();
-	int col = colIn->get_int();
-	int mine = mineIn->get_int();
+	int row = wind->get_rows();
+	int col = wind->get_cols();
+	int mine = wind->get_mines();
 	if(row<10) row = 10;
 	else if (row>31) row = 31;
 	if (col<10) col = 10;
@@ -445,14 +464,6 @@ void Game::placeWin(int x, int y, int w, int h, const char* st)
 	if (wind == nullptr)
 	{
 		wind = new LevelWindow(Point{x,y}, w, h, st, this);
-		rowIn = new In_box(Point{70, 10}, 50, 25, "Rows:");
-		wind->attach(*rowIn);
-		colIn = new In_box(Point{70, 45}, 50, 25, "Columns:");
-		wind->attach(*colIn);
-		mineIn = new In_box(Point{70, 80}, 50, 25, "Mines:");
-		wind->attach(*mineIn);
-		sub = new Button(Point{50, 115}, 50, 25, "Submit", cb_custom);
-		wind->attach(*sub);
 	}
 	wind->show();
 }

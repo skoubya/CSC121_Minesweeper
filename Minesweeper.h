@@ -19,9 +19,9 @@
 #include "Fl_Menu_.H"
 
 //debug mode?
-#ifndef debugM
-#define debugM
-static bool theDebug = true; 
+#ifndef Debug
+#define Debug
+extern bool visual;
 #endif
 
 #ifndef TileImg
@@ -98,7 +98,7 @@ struct Tile:Widget //not a button for aesthetic purposes (added MyBox)
 		int adj_mines;  
 		State current_state;
 		Fl_PNG_Image* unclicked_img = &TileImg::imgUnclicked;
-		Fl_PNG_Image* clicked_img;  
+		Fl_PNG_Image* clicked_img = nullptr;  
 		
 		void changeImage(Fl_PNG_Image& im); //possible public
 };
@@ -157,14 +157,13 @@ struct Counter : Widget
 
 struct Bar : Fl_Menu_Bar
 {
-public:
-	Bar(int x, int y, int w, int h)
-	:Fl_Menu_Bar(x,y,w,h)
-	{
+	public:
+		Bar(int x, int y, int w, int h)
+		:Fl_Menu_Bar(x,y,w,h)
+		{
 
-	}
-	//virtual int handle(int event);
-	//virtual int add (const char *);
+		}
+
 };
 
 struct Option : Widget
@@ -176,34 +175,37 @@ public:
 
 	}
 	void attach(Graph_lib::Window& win);
-	void change_debug();
-	void change_size (int w, int h) 
-	{
-		if (pw == nullptr) cout<<"pw is null \n";
-		pw->resize(loc.x,loc.y,w,h);
-	}
+	void change_size (int w, int h) {pw->resize(loc.x,loc.y,w,h);}
 };
 
 struct Game; //forward declaration
 
 struct LevelWindow : Graph_lib::Window
 {
-public:
-	LevelWindow(Point xy, int w, int h, const char* st, Game* gm)
-	:Window(xy, w, h, st), game{gm}
-	{
-	}
-	Game* game;
+	public:
+		LevelWindow(Point xy, int w, int h, const char* st, Game* gm);
+		~LevelWindow();
+		int get_rows() const {rowIn->get_int();}
+		int get_cols() const {colIn->get_int();}
+		int get_mines() const {mineIn->get_int();}
+		Game* game;
+	
+	private:
+		In_box* rowIn=nullptr;
+		In_box* colIn=nullptr;
+		In_box* mineIn=nullptr;
+		Button* sub=nullptr;
 };
 
-struct LevelWin : Widget
+struct HelpWindow : Graph_lib::Window
 {
-public:
-	LevelWin(Point xy, int w, int h, Callback cb)
-	:Widget(xy, w, h, "", cb)
-	{
-
-	}
+	public:
+		HelpWindow(Point xy, int w, int h, const char* st);
+		~HelpWindow();
+	
+	private:
+		Fl_Text_Display* helpTextD=nullptr;
+		Fl_Text_Buffer* helpTextB=nullptr;
 };
 
 struct Game: Graph_lib::Window //make window later
@@ -216,23 +218,13 @@ struct Game: Graph_lib::Window //make window later
 		Game(Point xy, const string& title );
 		~Game();
 		
-		//possibly all can be private
-		void place_mines (int num, int row, int col); //pass start click & make private later
-		void place_mine (int row, int col);  //make private later
-		void show_mines(int row, int col);  // which one to skip
-		void clear_board();
-		void create_board(int rows, int cols, int mines);
-		void lose_game(int row, int col);
-		void start_game(int row, int col);  //which one clicked to start
-		void win_game();
-		void restart_game();
-		void set_level(int row, int col, int mines);
 		static void cb_place_win(Fl_Widget*, Address);
 		static void cb_beginner(Fl_Widget*, Address);
 		static void cb_intermediate(Fl_Widget*, Address);
 		static void cb_expert(Fl_Widget*, Address);
 		static void cb_debug(Fl_Widget*, Address);
 		static void cb_help(Fl_Widget*, Address);
+		static void cb_custom(Address, Address);
 
 	private:
 		vector<vector<Tile*>> board; //pointer may be very bad (leak) but window does it
@@ -241,13 +233,7 @@ struct Game: Graph_lib::Window //make window later
 		Counter* timer;
 		Option* menuBar;
 		LevelWindow* wind=nullptr;
-		LevelWindow* helpWin = nullptr;
-		In_box* rowIn;
-		In_box* colIn;
-		In_box* mineIn;
-		Button* sub;
-		Fl_Text_Display* helpTextD;
-		Fl_Text_Buffer* helpTextB;
+		HelpWindow* helpWin = nullptr;
 		void placeWin(int x, int y, int w, int h, const char* st);
 		void dispHelp();
 
@@ -261,8 +247,17 @@ struct Game: Graph_lib::Window //make window later
 		static void cb_tile_click (Address, Address);
 		static void cb_restart_click (Address, Address);
 		static void cb_set_level(Address, Address);
-		static void cb_custom(Address, Address);
 
+		void place_mines (int num, int row, int col); //pass start click & make private later
+		void place_mine (int row, int col);
+		void show_mines(int row, int col);  // which one to skip
+		void clear_board();
+		void create_board(int rows, int cols, int mines);
+		void lose_game(int row, int col);
+		void start_game(int row, int col);  //which one clicked to start
+		void win_game();
+		void restart_game();
+		void set_level(int row, int col, int mines);
 		void custom();
 		//setting mines should increment mine count of those around
 		void click (int row, int col);

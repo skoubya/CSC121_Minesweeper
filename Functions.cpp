@@ -38,10 +38,11 @@ void Tile::attach(Graph_lib::Window& win)
 
 void Tile::put_mine(bool put)
 {
+	cout<<"In Functions: "<<visual<<endl;
 	mine= put;
 	if(mine) clicked_img=&TileImg::imgRedBomb;
 	else clicked_img=&TileImg::imgBlank;
-	if (theDebug)
+	if (visual)
 	{
 		if (mine) unclicked_img = &TileImg::imgBombDebug;
 		else unclicked_img = &TileImg::imgUnclicked;
@@ -56,35 +57,39 @@ void Tile::add_adj_mines()
 void Tile::set_adj_mines(int numMines)
 {
 	adj_mines=numMines;
+	cout<<"Add adjacent mines: "<<visual<<": "<<unclicked_img<<'-';
 	switch (adj_mines)
 	{
 		case 0: clicked_img = &TileImg::imgBlank;
+				unclicked_img= &TileImg::imgUnclicked;
 				break;
 		case 1: clicked_img = &TileImg::img1;
-				if(theDebug) unclicked_img = &TileImg::img1Debug;
+				if(visual) unclicked_img = &TileImg::img1Debug;
 				break;
 		case 2: clicked_img = &TileImg::img2;
-				if(theDebug) unclicked_img = &TileImg::img2Debug;
+				if(visual) unclicked_img = &TileImg::img2Debug;
 				break;
 		case 3: clicked_img = &TileImg::img3;
-				if(theDebug) unclicked_img = &TileImg::img3Debug;
+				if(visual) unclicked_img = &TileImg::img3Debug;
 				break;
 		case 4: clicked_img = &TileImg::img4;
-				if(theDebug) unclicked_img = &TileImg::img4Debug;
+				if(visual) unclicked_img = &TileImg::img4Debug;
 				break;
 		case 5: clicked_img = &TileImg::img5;
-				if(theDebug) unclicked_img = &TileImg::img5Debug;
+				if(visual) unclicked_img = &TileImg::img5Debug;
 				break;
 		case 6: clicked_img = &TileImg::img6;
-				if(theDebug) unclicked_img = &TileImg::img6Debug;
+				if(visual) unclicked_img = &TileImg::img6Debug;
 				break;
 		case 7: clicked_img = &TileImg::img7;
-				if(theDebug) unclicked_img = &TileImg::img7Debug;
+				if(visual) unclicked_img = &TileImg::img7Debug;
 				break;
 		case 8: clicked_img = &TileImg::img8;
-				if(theDebug) unclicked_img = &TileImg::img8Debug;
+				if(visual) unclicked_img = &TileImg::img8Debug;
 				break;
 	}
+	if (!visual) unclicked_img= &TileImg::imgUnclicked;
+	cout<<unclicked_img<<endl;
 }
 
 void Tile::loss()
@@ -175,8 +180,53 @@ void Option::attach(Graph_lib::Window& win)
 	static_cast<Bar*>(pw) ->add("Options/Select Level/Expert", 0, Game::cb_expert, &win);
 	static_cast<Bar*>(pw) ->add("Options/Select Level/Custom...", 0, Game::cb_place_win, &win);
 	static_cast<Bar*>(pw) ->add("Help", 0, Game::cb_help, &win); //change callback
-	static_cast<Bar*>(pw) ->add("Options/Toggle debug off", 0, Game::cb_debug, &win); //change callback
+	static_cast<Bar*>(pw) ->add("Options/Toggle debug on", 0, Game::cb_debug, &win); //change callback
 	pw->callback(reinterpret_cast<Fl_Callback*>(do_it), &win); // pass the window
 
     own = &win;
+}
+
+LevelWindow::LevelWindow (Point xy, int w, int h, const char* st, Game* gm)
+		:Window(xy, w, h, st), game{gm}
+{
+	rowIn = new In_box(Point{70, 10}, 50, 25, "Rows:");
+	attach(*rowIn);
+	colIn = new In_box(Point{70, 45}, 50, 25, "Columns:");
+	attach(*colIn);
+	mineIn = new In_box(Point{70, 80}, 50, 25, "Mines:");
+	attach(*mineIn);
+	sub = new Button(Point{50, 115}, 50, 25, "Submit", Game::cb_custom);
+	attach(*sub);
+}
+
+LevelWindow::~LevelWindow()
+{
+	if (rowIn != nullptr) delete rowIn;
+	cout<<"after rowIn delete \n";
+	if (colIn != nullptr) delete colIn;
+	cout<<"after colIn delete \n";
+	if (mineIn != nullptr) delete mineIn;
+	cout<<"after mineIn delete \n";
+	if (sub != nullptr) delete sub;
+	cout<<"after sub delete \n";
+}
+
+HelpWindow::HelpWindow (Point xy, int w, int h, const char* st)
+		:Window(xy, w, h, st)
+{
+	helpTextB = new Fl_Text_Buffer();
+	helpTextB->append("Click into the minefield to expose free space. The numbers show how many bombs are adjacent to that square. Use your math skills and powers of deduction to identify where the bombs must be. Place a flag where you know a bomb to be. Right-click or use the space bar to place flags.");
+	begin();
+	helpTextD = new Fl_Text_Display(10,10, 280, 180);
+	helpTextD->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
+	helpTextD->buffer(helpTextB);
+	end();
+}
+
+HelpWindow::~HelpWindow()
+{
+	if (helpTextD != nullptr) delete helpTextD;
+	cout<<"after helpTextD delete \n";
+	if (helpTextB != nullptr) delete helpTextB;
+	cout<<"after helpTextB delete \n";
 }
